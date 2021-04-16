@@ -1,3 +1,20 @@
+FROM golang:1.15.2 AS GOLANG
+ADD . /src/compliance-hub-plugin-trivy
+WORKDIR /src/compliance-hub-plugin-trivy
+RUN go get -d
+RUN go build -o /tmp/plugintrivy
+RUN ls -lrt /tmp
+
+
+FROM ubuntu:latest
+WORKDIR /app/
+COPY --from=GOLANG /tmp/myapp /app/myapp
+CMD ./app
+
+
+
+
+
 FROM alpine:3.12
 RUN apk --no-cache add ca-certificates git make go
 RUN mkdir /source
