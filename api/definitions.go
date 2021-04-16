@@ -13,4 +13,12 @@ type scanStatusResponse struct {
 type scanRequest struct {
 	ScanType string `json:"scanType"`
 	ScanUrl string `json:"scanUrl"`
+	RegistryCredentials registryCreds `json:"registryCredentials"`
 }
+
+type registryCreds struct {
+	RegistryProvider string `json:"registryProvider"`
+	RegistryUsername string `json:"registryUsername"`
+	RegistryPassword string `json:"registryPassword"`
+}
+

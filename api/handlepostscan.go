@@ -9,7 +9,7 @@ import (
 )
 
 // HandlePostScan initiates a run of the trivy scanner client.
-func handlePostScan(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func HandlePostScan(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var (
 		scanRequestData scanRequest
 		scanResponse []byte
@@ -19,6 +19,8 @@ func handlePostScan(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		w.WriteHeader(HTTP_INVALID_REQUEST)
 		return
 	}
+
+
 
 	if err := scanner.Scan(scanRequestData.ScanType, scanRequestData.ScanUrl,&scanResponse); err != nil {
 		w.WriteHeader(HTTP_INVALID_REQUEST)

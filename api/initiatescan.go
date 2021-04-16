@@ -11,9 +11,9 @@ var TrivyRouter *httprouter.Router
 func main() {
 	TrivyRouter = httprouter.New()
 
-	TrivyRouter.GET("/status", handleGetStatus)
+	TrivyRouter.GET("/status", HandleGetStatus)
 
-	TrivyRouter.POST("/scan", handlePostScan)
+	TrivyRouter.POST("/scan", HandlePostScan)
 
 	log.Fatal(http.ListenAndServe(":8080", TrivyRouter), nil)
 }
