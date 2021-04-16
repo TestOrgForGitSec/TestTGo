@@ -1,16 +1,15 @@
 package scanner
 
-
-
 import (
 	"encoding/json"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
+	"errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"errors"
 	"strings"
+
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 )
 
 func Scan(scanType, scanUrl string,response *[]byte) error {
@@ -62,20 +61,21 @@ func Scan(scanType, scanUrl string,response *[]byte) error {
 func scanImage(imageUrl, outDir string) error {
 	// execute the trivy client
 
-	outputFile := outDir + Slash + imageUrl + UnderScore + OutputFileName
-	cmd := exec.Command(App, RunAsClient, OutputFormat, SpecifyOutput+outputFile, RemoteServer, imageUrl)
-
-	log.Debug().Msgf("Scan Command is %s", cmd.String())
+	imageName := strings.ReplaceAll(imageUrl,Slash,UnderScore)
+	imageName = strings.ReplaceAll(imageName,Colon,UnderScore)
+	outputFile := outDir + Slash + imageName + DoubleUnderScore + OutputFileName
+	cmd := exec.Command(App, RunAsClient,SpecifyFormat, OutputFormat, SpecifyOutput, outputFile, SpecifyRemote, RemoteServer, imageUrl)
 
 	scanLog, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Debug().Msg(string(scanLog))
 		log.Error().Err(err).Msgf("Could not execute command %s", cmd.String())
 		return err
 	}
 
 	// write the log file from the scan
 	log.Debug().Msg(string(scanLog))
-	logFileName := outDir + Slash + imageUrl + UnderScore + LogFileName
+	logFileName := outDir + Slash + imageName + DoubleUnderScore + LogFileName
 	if err := ioutil.WriteFile(logFileName,scanLog,FilePerm); err != nil {
 		log.Error().Err(err).Msgf("Could not write file %s", logFileName)
 		return err
@@ -134,8 +134,8 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 				return err
 			}
 
-			scanRes.ImageUrl = fileName[:strings.Index(fileName,UnderScore)]
-			scanRes.ImageScanOutput = content
+			scanRes.ImageUrl = fileName[:strings.Index(fileName,DoubleUnderScore)]
+			scanRes.ImageScanOutput = string(content)
 			scanResp.ScanOutput = append(scanResp.ScanOutput,scanRes)
 			continue
 		}
@@ -148,8 +148,8 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 				return err
 			}
 
-			scanLog.ImageUrl = fileName[:strings.Index(fileName,UnderScore)]
-			scanLog.ImageScanLog = content
+			scanLog.ImageUrl = fileName[:strings.Index(fileName,DoubleUnderScore)]
+			scanLog.ImageScanLog = string(content)
 			scanResp.ScanLog = append(scanResp.ScanLog,scanLog)
 			continue
 		}

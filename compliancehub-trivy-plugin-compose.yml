@@ -1,0 +1,32 @@
+version: "3.2"
+services:
+  compliancehub-plugin-trivy:
+    image: chplugintrivy
+    container_name: compliancehub-plugin-trivy        
+    privileged: true
+    hostname: compliancehub-plugin-trivy
+    environment:
+      - TRIVY_REMOTE="http://trivy-server:8081"
+    networks: 
+      - trivy_network
+    ports:
+      - '8080:8080'
+    volumes:      
+      - '/var/run/docker.sock:/var/run/docker.sock'
+  trivy-server:
+    image: aquasec/trivy:latest
+    container_name: trivy-server    
+    command: server --listen ':8081'
+    privileged: true
+    hostname: trivy_server
+    networks: 
+      - trivy_network
+    ports:      
+      - '8081:8081'
+    volumes:
+      - './trivy-server/output:/trivy-server/output'
+      - '/var/run/docker.sock:/var/run/docker.sock'    
+networks:
+  trivy_network:
+
+  

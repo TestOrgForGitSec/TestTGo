@@ -3,7 +3,9 @@ package scanner
 
 const (
 	EmptyString = ""
+	DoubleUnderScore = "__"
 	UnderScore = "_"
+	Colon = ":"
 	Slash = "/"
 	WorkDirBase = "/tmp/scan-"
 	OutputDir = "/output"
@@ -14,9 +16,11 @@ const (
 	// trivy client command constants
 	App = "trivy"
 	RunAsClient = "client"
-	OutputFormat = "-f json"
-	SpecifyOutput = "-o "
-	RemoteServer = "--remote \"http://trivy-server:8081\" "
+	SpecifyFormat = "-f"
+	OutputFormat = "json"
+	SpecifyOutput = "-o"
+	SpecifyRemote = "--remote"
+	RemoteServer = "http://trivy-server:8081"
 )
 
 type scanResponse struct {
@@ -27,10 +31,10 @@ type scanResponse struct {
 
 type imageResult struct {
 	ImageUrl string `json:"imageUrl"`
-	ImageScanOutput []byte `json:"imageScanOutput"`
+	ImageScanOutput string `json:"imageScanOutput"`
 }
 
 type imageLog struct {
 	ImageUrl string `json:"imageUrl"`
-	ImageScanLog []byte `json:"imageScanLog"`
+	ImageScanLog string `json:"imageScanLog"`
 }
