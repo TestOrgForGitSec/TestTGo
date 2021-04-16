@@ -16,7 +16,7 @@ const (
 	RunAsClient = "client"
 	OutputFormat = "-f json"
 	SpecifyOutput = "-o "
-	RemoteServer = "--remote \"http://trivy-server:8080\" "
+	RemoteServer = "--remote \"http://trivy-server:8081\" "
 )
 
 type scanResponse struct {

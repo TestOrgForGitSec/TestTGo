@@ -1,31 +1,13 @@
-FROM golang:1.15.2 AS GOLANG
+FROM golang AS TRIVYPLUGIN
 ADD . /src/compliance-hub-plugin-trivy
 WORKDIR /src/compliance-hub-plugin-trivy
 RUN go get -d
 RUN go build -o /tmp/plugintrivy
 RUN ls -lrt /tmp
 
+FROM aquasec/trivy
+WORKDIR /app
+COPY --from=TRIVYPLUGIN /tmp/plugintrivy /app/plugintrivy
+RUN ls -lrt /app
+ENTRYPOINT /app/plugintrivy
 
-FROM ubuntu:latest
-WORKDIR /app/
-COPY --from=GOLANG /tmp/myapp /app/myapp
-CMD ./app
-
-
-
-
-
-FROM alpine:3.12
-RUN apk --no-cache add ca-certificates git make go
-RUN mkdir /source
-RUN cd /source
-RUN git clone https://github.com/deliveryblueprints/compliance-hub-plugin-trivy.git
-RUN git clone https://github.com/aquasecurity/trivy.git
-RUN cd compliance-hub-plugin-trivy.git/api
-RUN go build -o compliance-hub-plugin-trivy initiatescan.go
-RUN mkdir /app/compliance-hub-plugin-trivy
-RUN mkdir /app/trivy
-ENTRYPOINT ["/bin/sh"]
-
-
-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
