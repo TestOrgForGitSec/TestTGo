@@ -1,10 +1,12 @@
-FROM golang:1.16.3-alpine3.13
-RUN apk --no-cache add ca-certificates git make
-RUN mkdir /app
-WORKDIR /source
-ADD . /source/compliance-hub-plugin-trivy
-RUN git clone https://github.com/aquasecurity/trivy.git
-RUN cd /source/compliance-hub-plugin-trivy; go build -o /app/plugintrivy
-RUN cd /source/trivy; make build
+FROM golang:1.16.3-alpine3.13 AS TRIVYPLUGIN
+ADD . /src/compliance-hub-plugin-trivy
+WORKDIR /src/compliance-hub-plugin-trivy
+RUN go get -d
+RUN go build -o /tmp/plugintrivy
+RUN ls -lrt /tmp
 
-ENTRYPOINT ["/bin/sh"]
+FROM aquasec/trivy
+WORKDIR /app
+EXPOSE 8080:8080
+COPY --from=TRIVYPLUGIN /tmp/plugintrivy /app/plugintrivy
+ENTRYPOINT /app/plugintrivy
