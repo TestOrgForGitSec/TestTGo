@@ -1,0 +1,2 @@
+protoc -I $GOPATH/src --go_out=$GOPATH/src $GOPATH/src/compliance-hub-plugin-trivy/internal/proto-files/basic/domain/manifest.proto
+protoc -I $GOPATH/src --go_out=plugins=grpc:$GOPATH/src $GOPATH/src/compliance-hub-plugin-trivy/internal/proto-files/basic/service/manifest-service.proto

@@ -10,7 +10,7 @@ services:
     networks: 
       - trivy_network
     ports:
-      - '8080:8080'
+      - '6010:6010'
     volumes:      
       - '/var/run/docker.sock:/var/run/docker.sock'
   trivy-server:

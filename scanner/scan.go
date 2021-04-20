@@ -12,14 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func Scan(scanType, scanUrl string,response *[]byte) error {
+func Scan(scanType, scanUrl string, response *[]byte) error {
 
 	scanRunUUID := uuid.NewString()
 
 	log.Info().Msgf("Starting Scan run %s", scanRunUUID)
 
 	if scanType == EmptyString || scanUrl == EmptyString || response == nil {
-		log.Info().Msgf("Incorrect Scan params : scanType=%s, scanUrl=%s, or response byte array was nil.", scanType,scanUrl)
+		log.Info().Msgf("Incorrect Scan params : scanType=%s, scanUrl=%s, or response byte array was nil.", scanType, scanUrl)
 		return errors.New("invalid scan parameters")
 	}
 
@@ -32,15 +32,15 @@ func Scan(scanType, scanUrl string,response *[]byte) error {
 
 	switch scanType {
 	case "Image":
-		log.Info().Msgf("Scanning Image %s",scanUrl)
-		if err := scanImage(scanUrl, outDir);err != nil {
+		log.Info().Msgf("Scanning Image %s", scanUrl)
+		if err := scanImage(scanUrl, outDir); err != nil {
 			log.Error().Err(err).Msg("Scan Image Failed")
 			return err
 		}
 
 	case "Registry":
-		log.Info().Msgf("Scanning Image Registry %s",scanUrl)
-		if err := scanRegistry(scanUrl);err != nil {
+		log.Info().Msgf("Scanning Image Registry %s", scanUrl)
+		if err := scanRegistry(scanUrl); err != nil {
 			log.Error().Err(err).Msg("Scan Registry Failed")
 			return err
 		}
@@ -51,7 +51,7 @@ func Scan(scanType, scanUrl string,response *[]byte) error {
 
 	// create the output response
 
-	if err := createResponse(scanRunUUID, outDir, response); err!= nil {
+	if err := createResponse(scanRunUUID, outDir, response); err != nil {
 		return err
 	}
 
@@ -61,10 +61,10 @@ func Scan(scanType, scanUrl string,response *[]byte) error {
 func scanImage(imageUrl, outDir string) error {
 	// execute the trivy client
 
-	imageName := strings.ReplaceAll(imageUrl,Slash,UnderScore)
-	imageName = strings.ReplaceAll(imageName,Colon,UnderScore)
+	imageName := strings.ReplaceAll(imageUrl, Slash, UnderScore)
+	imageName = strings.ReplaceAll(imageName, Colon, UnderScore)
 	outputFile := outDir + Slash + imageName + DoubleUnderScore + OutputFileName
-	cmd := exec.Command(App, RunAsClient,SpecifyFormat, OutputFormat, SpecifyOutput, outputFile, SpecifyRemote, RemoteServer, imageUrl)
+	cmd := exec.Command(App, RunAsClient, SpecifyFormat, OutputFormat, SpecifyOutput, outputFile, SpecifyRemote, RemoteServer, imageUrl)
 
 	scanLog, err := cmd.CombinedOutput()
 	if err != nil {
@@ -76,7 +76,7 @@ func scanImage(imageUrl, outDir string) error {
 	// write the log file from the scan
 	log.Debug().Msg(string(scanLog))
 	logFileName := outDir + Slash + imageName + DoubleUnderScore + LogFileName
-	if err := ioutil.WriteFile(logFileName,scanLog,FilePerm); err != nil {
+	if err := ioutil.WriteFile(logFileName, scanLog, FilePerm); err != nil {
 		log.Error().Err(err).Msgf("Could not write file %s", logFileName)
 		return err
 	}
@@ -85,12 +85,12 @@ func scanImage(imageUrl, outDir string) error {
 }
 
 func mkDir(workDir, outDir string) error {
-	if err := os.Mkdir(workDir,FilePerm); err != nil {
+	if err := os.Mkdir(workDir, FilePerm); err != nil {
 		log.Error().Msgf("Could not create directory %s", workDir)
 		return err
 	}
 
-	if err := os.Mkdir(outDir,FilePerm); err != nil {
+	if err := os.Mkdir(outDir, FilePerm); err != nil {
 		log.Error().Msgf("Could not create directory %s", workDir)
 		return err
 	}
@@ -104,9 +104,8 @@ func scanRegistry(registryUrl string) error {
 func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 	var (
 		scanResp scanResponse
-		scanRes imageResult
-		scanLog imageLog
-
+		scanRes  imageResult
+		scanLog  imageLog
 	)
 
 	scanResp.ScanRunUUID = scanRunUUID
@@ -118,15 +117,14 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 		return err
 	}
 
-	for _,file := range files {
+	for _, file := range files {
 		if file.IsDir() {
 			continue
 		}
 		fileName := file.Name()
 		filePath := outDir + Slash + fileName
 
-
-		if strings.Contains(fileName,OutputFileName) {
+		if strings.Contains(fileName, OutputFileName) {
 			scanRes = imageResult{}
 			content, err := ioutil.ReadFile(filePath)
 			if err != nil {
@@ -134,13 +132,13 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 				return err
 			}
 
-			scanRes.ImageUrl = fileName[:strings.Index(fileName,DoubleUnderScore)]
-			scanRes.ImageScanOutput = string(content)
-			scanResp.ScanOutput = append(scanResp.ScanOutput,scanRes)
+			scanRes.ImageUrl = fileName[:strings.Index(fileName, DoubleUnderScore)]
+			scanRes.ImageScanOutput = content
+			scanResp.ScanOutput = append(scanResp.ScanOutput, scanRes)
 			continue
 		}
 
-		if strings.Contains(fileName,LogFileName) {
+		if strings.Contains(fileName, LogFileName) {
 			scanLog = imageLog{}
 			content, err := ioutil.ReadFile(filePath)
 			if err != nil {
@@ -148,14 +146,18 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 				return err
 			}
 
-			scanLog.ImageUrl = fileName[:strings.Index(fileName,DoubleUnderScore)]
+			scanLog.ImageUrl = fileName[:strings.Index(fileName, DoubleUnderScore)]
 			scanLog.ImageScanLog = string(content)
-			scanResp.ScanLog = append(scanResp.ScanLog,scanLog)
+			scanResp.ScanLog = append(scanResp.ScanLog, scanLog)
 			continue
 		}
-	}
 
+	}
 	*response, err = json.Marshal(scanResp)
+
+	if err != nil {
+		log.Error().Err(err).Msgf("Could not marshal response - %s", err)
+	}
 
 	return nil
 }
