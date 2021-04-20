@@ -6,12 +6,12 @@ import (
 )
 
 func TestCreateResponse(t *testing.T) {
-	const(
-		TestUUID = "testUUID"
+	const (
+		TestUUID    = "testUUID"
 		TestDataDir = "./testdata"
 	)
 	var resp []byte
-	err := createResponse(TestUUID,TestDataDir,&resp)
+	err := createResponse(TestUUID, TestDataDir, &resp)
 
 	if err != nil {
 		fmt.Println("did not work")
@@ -21,12 +21,12 @@ func TestCreateResponse(t *testing.T) {
 }
 
 func TestScanImage(t *testing.T) {
-	const(
-		ImageURL = "Image2"
+	const (
+		ImageURL    = "Image2"
 		TestDataDir = "./testdata"
 	)
 	var resp []byte
-	err := scanImage(ImageURL,TestDataDir)
+	err := scanImage(ImageURL, TestDataDir)
 
 	if err != nil {
 		fmt.Println("did not work")

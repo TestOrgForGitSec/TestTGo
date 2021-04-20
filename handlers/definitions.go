@@ -1,9 +1,9 @@
 package handlers
 
 const (
-	HTTP_SUCCESS = 200
+	HTTP_SUCCESS         = 200
 	HTTP_INVALID_REQUEST = 401
-	HTTP_SERVER_FAILURE = 500
+	HTTP_SERVER_FAILURE  = 500
 )
 
 type scanStatusResponse struct {
@@ -21,4 +21,3 @@ type registryCreds struct {
 	RegistryUsername string `json:"registryUsername"`
 	RegistryPassword string `json:"registryPassword"`
 }
-

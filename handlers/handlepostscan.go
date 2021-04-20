@@ -16,14 +16,12 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 		scanResponse    []byte
 	)
 
-	if err := unmarshallScanRequest(r,&scanRequestData); err != nil {
+	if err := unmarshallScanRequest(r, &scanRequestData); err != nil {
 		w.WriteHeader(HTTP_INVALID_REQUEST)
 		return
 	}
 
-
-
-	if err := scanner.Scan(scanRequestData.ScanType, scanRequestData.ScanUrl,&scanResponse); err != nil {
+	if err := scanner.Scan(scanRequestData.ScanType, scanRequestData.ScanUrl, &scanResponse); err != nil {
 		w.WriteHeader(HTTP_INVALID_REQUEST)
 		return
 	}
@@ -40,7 +38,7 @@ func unmarshallScanRequest(r *http.Request, scanRequestData *scanRequest) (err e
 		return err
 	}
 
-	err = json.Unmarshal(reqBody,scanRequestData)
+	err = json.Unmarshal(reqBody, scanRequestData)
 	if err != nil {
 		return err
 	}
