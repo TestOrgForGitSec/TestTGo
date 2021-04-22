@@ -6,6 +6,7 @@ import (
 	"compliance-hub-plugin-trivy/scanner"
 	"context"
 	"encoding/json"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -36,7 +37,7 @@ func NewManifestServiceGrpcImpl() *ManifestServiceGrpcImpl {
 		[]*AssetDTO{
 			{
 				UUID:          "mg1b7594-8827-11eb-8dcd-0242ac130003",
-				Type:          "CODE",
+				Type:          "BINARY",
 				SubType:       "container_image",
 				Identifier:    "jenkins/jenkins:2.235.1-lts-alpine",
 				Status:        "ACTIVE",
@@ -45,7 +46,7 @@ func NewManifestServiceGrpcImpl() *ManifestServiceGrpcImpl {
 			},
 			{
 				UUID:          "mg2bc48e-8827-11eb-8dcd-0242ac130003",
-				Type:          "CODE",
+				Type:          "BINARY",
 				SubType:       "container_image",
 				Identifier:    "jenkins/jenkins:2.277.2-lts-alpine",
 				Status:        "ACTIVE",
@@ -65,8 +66,10 @@ func (serviceImpl *ManifestServiceGrpcImpl) GetManifest(ctx context.Context, in 
 			Uuid: "mg19e330-8827-11eb-8dcd-0242ac130003",
 			Name: "TrivyScanner",
 			AssetRoles: []*domain.AssetRole{
-				&domain.AssetRole{Role: "MASTER", AssetType: &domain.AssetType{Type: "CODE"}, RequestsAssets: false, Command: &domain.Command{Command: "GET_ASSETS"}},
-				&domain.AssetRole{Role: "DECORATOR", AssetType: &domain.AssetType{Type: "CODE"}, RequestsAssets: false, Command: &domain.Command{Command: "SCAN_ASSETS"}},
+				&domain.AssetRole{Role: "MASTER", AssetType: &domain.AssetType{Type: "BINARY"}, RequestsAssets: false,
+					Command: &domain.Command{Command: "GET_ASSETS"}},
+				&domain.AssetRole{Role: "DECORATOR", AssetType: &domain.AssetType{Type: "BINARY"}, RequestsAssets: false,
+					Command: &domain.Command{Command: "SCAN_ASSETS"}},
 			},
 			Commands: []*domain.Command{
 				&domain.Command{Command: "GET_ASSETS"},
