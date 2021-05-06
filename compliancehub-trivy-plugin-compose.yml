@@ -10,7 +10,7 @@ services:
     networks: 
       - trivy_network
     ports:
-      - '5003:5003'
+      - '5004:5004'
     volumes:      
       - '/var/run/docker.sock:/var/run/docker.sock'
   trivy-server:
@@ -22,7 +22,7 @@ services:
     networks: 
       - trivy_network
     ports:      
-      - '5004:5004'
+      - '5005:5005'
     volumes:
       - './trivy-server/output:/trivy-server/output'
       - '/var/run/docker.sock:/var/run/docker.sock'    
