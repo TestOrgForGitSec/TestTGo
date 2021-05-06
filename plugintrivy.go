@@ -1,20 +1,21 @@
 package main
 
 import (
+	"compliance-hub-plugin-trivy/config"
 	"compliance-hub-plugin-trivy/internal/gRPC/basic/service"
 	"compliance-hub-plugin-trivy/lservice"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 )
 
 //var TrivyRouter *httprouter.Router
 
-func getNetListener(port uint) net.Listener {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+func getNetListener(address string, port uint) net.Listener {
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", address, port))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal().Msgf("failed to listen: %v", err)
 		panic(fmt.Sprintf("failed to listen: %v", err))
 	}
 
@@ -23,7 +24,9 @@ func getNetListener(port uint) net.Listener {
 
 func main() {
 
-	netListener := getNetListener(6010)
+	config.InitConfig()
+
+	netListener := getNetListener(config.Config.GetString("server.address"), config.Config.GetUint("server.port"))
 	gRPCServer := grpc.NewServer()
 
 	manifestServiceImpl := lservice.NewManifestServiceGrpcImpl()
@@ -31,7 +34,7 @@ func main() {
 
 	// start the server
 	if err := gRPCServer.Serve(netListener); err != nil {
-		log.Fatalf("failed to serve: %s", err)
+		log.Fatal().Msgf("failed to serve: %s", err)
 	}
 
 	/*

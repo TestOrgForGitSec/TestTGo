@@ -7,6 +7,5 @@ RUN ls -lrt /tmp
 
 FROM aquasec/trivy
 WORKDIR /app
-EXPOSE 6010:6010
 COPY --from=TRIVYPLUGIN /tmp/plugintrivy /app/plugintrivy
 ENTRYPOINT /app/plugintrivy
