@@ -16,7 +16,7 @@ services:
   trivy-server:
     image: aquasec/trivy:latest
     container_name: trivy-server    
-    command: server --listen ':5004'
+    command: server --listen ':5005'
     privileged: true
     hostname: trivy_server
     networks: 
