@@ -1,11 +1,9 @@
-// replace occurrences of 'something' with name of your service
-
 pipeline {
 
   agent {label 'ubuntu'}
 
   environment {
-    module = "plugin-trivy-client"
+    module = "plugin-trivy"
     version = "qa"
     repo = "853385135017.dkr.ecr.us-east-1.amazonaws.com/compliance-hub/$module"
     target = "$repo:$version"
@@ -13,7 +11,10 @@ pipeline {
     TOKEN = credentials('GitHub-ansible-db')
   }
 
-  options { disableConcurrentBuilds() }
+  options { 
+    disableConcurrentBuilds() 
+    ansiColor('xterm')
+  }
 
   stages {
 
@@ -22,7 +23,7 @@ pipeline {
         withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')]) {
           script {
             currentBuild.description = "${env.GIT_BRANCH} ${env.GIT_COMMIT}"
-            sh "docker build -t $target --build-arg=USER --build-arg=TOKEN ."
+            sh "docker build -t $target --build-arg=PLATFORMIMAGE --build-arg=USER --build-arg=TOKEN ."
           }
         }
       }
