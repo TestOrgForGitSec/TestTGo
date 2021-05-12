@@ -35,7 +35,6 @@ type ManifestServiceGrpcImpl struct {
 func NewManifestServiceGrpcImpl() *ManifestServiceGrpcImpl {
 	return &ManifestServiceGrpcImpl{
 		[]*AssetDTO{
-			/*
 			{
 				UUID:          "mg1b7594-8827-11eb-8dcd-0242ac130003",
 				Type:          "BINARY",
@@ -45,15 +44,13 @@ func NewManifestServiceGrpcImpl() *ManifestServiceGrpcImpl {
 				Attributes:    json.RawMessage(`{"id":"jenkins/jenkins:2.235.1-lts-alpine", "type": "image", "pull_command": "docker pull jenkins/jenkins:2.235.1-lts-alpine"}`),
 				SubAttributes: []SubAttributesDTO{},
 			},
-
-			 */
 			{
 				UUID:          "mg2bc48e-8827-11eb-8dcd-0242ac130003",
 				Type:          "BINARY",
 				SubType:       "container_image",
 				Identifier:    "jenkins/jenkins:2.277.2-lts-alpine",
 				Status:        "ACTIVE",
-				Attributes:    json.RawMessage(`{"id":"jenkins/jenkins:2.277.2-lts-alpine", "pull_command": "docker pull jenkins/jenkins:2.277.2-lts-alpine"}`),
+				Attributes:    json.RawMessage(`{"id":"jenkins/jenkins:2.277.2-lts-alpine", "type": "image", "pull_command": "docker pull jenkins/jenkins:2.277.2-lts-alpine"}`),
 				SubAttributes: []SubAttributesDTO{},
 			},
 		},
