@@ -5,7 +5,7 @@ RUN go get -d
 RUN go build -o /tmp/plugintrivy
 RUN ls -lrt /tmp
 
-FROM aquasec/trivy
+FROM aquasec/trivy:0.16.0
 WORKDIR /app
 COPY --from=TRIVYPLUGIN /tmp/plugintrivy /app/plugintrivy
 ENTRYPOINT /app/plugintrivy
