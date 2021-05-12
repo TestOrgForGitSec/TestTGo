@@ -66,6 +66,8 @@ func scanImage(imageUrl, outDir string) error {
 	imageName = strings.ReplaceAll(imageName, Colon, UnderScore)
 	outputFile := outDir + Slash + imageName + DoubleUnderScore + OutputFileName
 	cmd := exec.Command(App, "-d", RunAsClient, SpecifyFormat, OutputFormat, SpecifyOutput, outputFile, SpecifyRemote, config.Config.GetString("trivy.remote"), imageUrl)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	scanLog, err := cmd.CombinedOutput()
 	if err != nil {
