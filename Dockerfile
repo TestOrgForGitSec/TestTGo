@@ -1,8 +1,9 @@
-FROM golang:1.16.3 AS TRIVYPLUGIN
+FROM golang:1.16.3-alpine3.13 AS TRIVYPLUGIN
 ADD . /src/compliance-hub-plugin-trivy
 WORKDIR /src/compliance-hub-plugin-trivy
 ARG USER
 ARG TOKEN
+RUN apk --no-cache add git
 RUN go env -w GOPRIVATE=github.com/deliveryblueprints/*
 RUN git config --global url."https://${USER}:${TOKEN}@github.com".insteadOf  "https://github.com"
 RUN go get -d
