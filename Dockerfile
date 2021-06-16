@@ -1,4 +1,4 @@
-FROM golang:1.16.3-alpine3.13 AS TRIVYPLUGIN
+FROM golang:1.16.3 AS TRIVYPLUGIN
 ADD . /src/compliance-hub-plugin-trivy
 WORKDIR /src/compliance-hub-plugin-trivy
 ARG USER
