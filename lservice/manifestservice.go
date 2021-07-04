@@ -152,10 +152,31 @@ func mapToAssetAttributes(assets []*AssetDTO) []*domain.AssetAttributes {
 				Identifier: a.Identifier,
 			},
 			Attributes:    attributesToRawJson(a.Attributes),
-			SubAttributes: []*domain.AssetSubAttributes{},
+			SubAttributes: subAttributesDTOListToSubAttributes(a.SubAttributes), //[]*domain.AssetSubAttributes{},
 		})
 	}
 	return result
+}
+
+func subAttributesDTOListToSubAttributes(subAttributesDTO []SubAttributesDTO) []*domain.AssetSubAttributes {
+	subAttributes := make([]*domain.AssetSubAttributes, len(subAttributesDTO))
+	for i, subAttribute := range subAttributesDTO {
+
+		var rawSubAttributes json.RawMessage
+		var err error
+		if rawSubAttributes, err = json.Marshal(subAttribute.Attributes); err != nil {
+			log.Error().Err(err).Msgf("error marshalling sub attributes")
+			rawSubAttributes = json.RawMessage(`{}`)
+		}
+
+		subAttributes[i] = &domain.AssetSubAttributes{
+			AttributesUuid: subAttribute.AssetAttributesUUID,
+			Type:           subAttribute.Type,
+			SubAttributes:  rawSubAttributes,
+		}
+	}
+
+	return subAttributes
 }
 
 func attributesToRawJson(attributes json.RawMessage) []byte {
