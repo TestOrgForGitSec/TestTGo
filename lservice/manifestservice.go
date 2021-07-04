@@ -55,6 +55,24 @@ func NewTrivyScanner() *TrivyScanner {
 				Attributes:    json.RawMessage(`{"id":"jenkins/jenkins:2.277.2-lts-alpine", "type": "image", "pull_command": "docker pull jenkins/jenkins:2.277.2-lts-alpine"}`),
 				SubAttributes: []SubAttributesDTO{},
 			},
+			{
+				UUID:          "mg3bc48e-8827-11eb-8dcd-0242ac130003",
+				Type:          "BINARY",
+				SubType:       "container_image",
+				Identifier:    "cloudbees/cloudbees-core-mm:2.289.2.2",
+				Status:        "ACTIVE",
+				Attributes:    json.RawMessage(`{"id":"cloudbees/cloudbees-core-mm:2.289.2.2", "type": "image", "pull_command": "docker pull cloudbees/cloudbees-core-mm:2.289.2.2"}`),
+				SubAttributes: []SubAttributesDTO{},
+			},
+			{
+				UUID:          "mg4bc48e-8827-11eb-8dcd-0242ac130003",
+				Type:          "BINARY",
+				SubType:       "container_image",
+				Identifier:    "cloudbees/cloudbees-core-mm:latest",
+				Status:        "ACTIVE",
+				Attributes:    json.RawMessage(`{"id":"cloudbees/cloudbees-core-mm:latest", "type": "image", "pull_command": "docker pull cloudbees/cloudbees-core-mm:latest"}`),
+				SubAttributes: []SubAttributesDTO{},
+			},
 		},
 	}
 }
