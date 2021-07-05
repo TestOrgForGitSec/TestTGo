@@ -91,6 +91,7 @@ func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.Ge
 				{
 					Role:                 "DECORATOR",
 					AssetType:            &domain.AssetType{Type: "BINARY"},
+					CreatesAttributes:    true,
 					CreatesSubAttributes: []string{"trivy"},
 				},
 			},
