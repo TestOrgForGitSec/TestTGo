@@ -151,6 +151,7 @@ func mapToAssetAttributes(assets []*AssetDTO) []*domain.AssetAttributes {
 				SubType:    a.SubType,
 				Identifier: a.Identifier,
 			},
+			Attributes:    a.Attributes,
 			SubAttributes: subAttributesDTOListToSubAttributes(a.SubAttributes), //[]*domain.AssetSubAttributes{},
 		})
 	}
