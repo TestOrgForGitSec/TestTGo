@@ -89,9 +89,9 @@ func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.Ge
 					AssetType: &domain.AssetType{Type: "BINARY"},
 				},
 				{
-					Role:              "DECORATOR",
-					AssetType:         &domain.AssetType{Type: "BINARY"},
-					CreatesAttributes: true,
+					Role:                 "DECORATOR",
+					AssetType:            &domain.AssetType{Type: "BINARY"},
+					CreatesSubAttributes: []string{"trivy"},
 				},
 			},
 		},
@@ -151,7 +151,6 @@ func mapToAssetAttributes(assets []*AssetDTO) []*domain.AssetAttributes {
 				SubType:    a.SubType,
 				Identifier: a.Identifier,
 			},
-			Attributes:    attributesToRawJson(a.Attributes),
 			SubAttributes: subAttributesDTOListToSubAttributes(a.SubAttributes), //[]*domain.AssetSubAttributes{},
 		})
 	}
