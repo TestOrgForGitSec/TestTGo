@@ -81,8 +81,9 @@ func NewTrivyScanner() *TrivyScanner {
 func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.GetManifestRequest) (*service.GetManifestResponse, error) {
 	return &service.GetManifestResponse{
 		Manifest: &domain.Manifest{
-			Uuid: "mg19e330-8827-11eb-8dcd-0242ac130003",
-			Name: "TrivyScanner",
+			Uuid:    "mg19e330-8827-11eb-8dcd-0242ac130003",
+			Name:    "Docker Hub Scanner",
+			Version: "0.0.1",
 			AssetRoles: []*domain.AssetRole{
 				{
 					Role:      "MASTER",
