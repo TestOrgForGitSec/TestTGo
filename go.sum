@@ -66,8 +66,12 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/deliveryblueprints/chplugin-go v1.1.0 h1:vCtg9jGI0Ic1Qm0tcpQgD/UGZhYmAb1vn+w+A0rKSus=
 github.com/deliveryblueprints/chplugin-go v1.1.0/go.mod h1:OwKZzEzQM0bxwlpIIhmRnwKGmFCZjdzhWlnvfKpA91s=
+github.com/deliveryblueprints/chplugin-go v1.3.0 h1:VQr40PBHncb9CGDalIeCpnOGeVqtfokxBBcFVvIyVrQ=
+github.com/deliveryblueprints/chplugin-go v1.3.0/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-service-go v1.1.1 h1:lqYIxFEpFv/qmPWuB+CAK9GXJ3nT+7QL+GMPgOjb8y4=
 github.com/deliveryblueprints/chplugin-service-go v1.1.1/go.mod h1:G2srNAmlm0lTBA+XNU/8Tr9FvwPS+ayvISYhgjJGzqs=
+github.com/deliveryblueprints/chplugin-service-go v1.2.0 h1:f3wmCTMEmoEHyE+Wdb58yOlFurcmLKlp11lFgM4kXB0=
+github.com/deliveryblueprints/chplugin-service-go v1.2.0/go.mod h1:7Rx4/lLa+2v4qfHuY7AjLE6zcVXhSgUaH6nfToYzGb8=
 github.com/deliveryblueprints/compliance-hub-grpc-test-client v0.1.0 h1:QmSvttD6b0N/cxPlOFc/ca2+bmn20muosbgtg3+dph4=
 github.com/deliveryblueprints/compliance-hub-grpc-test-client v0.1.0/go.mod h1:copX6FBw/fZDpE/7o8q0NbQ82moqntopTwJIoOv2T0w=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
