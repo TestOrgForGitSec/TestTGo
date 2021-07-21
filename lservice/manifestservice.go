@@ -4,8 +4,8 @@ import (
 	"compliance-hub-plugin-trivy/scanner"
 	"context"
 	"encoding/json"
-	domain "github.com/deliveryblueprints/chplugin-go/v1.0/domain"
-	service "github.com/deliveryblueprints/chplugin-go/v1.0/service"
+	domain "github.com/deliveryblueprints/chplugin-go/v0.0.1/domainv0_0_1"
+	service "github.com/deliveryblueprints/chplugin-go/v0.0.1/servicev0_0_1"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 
 	"github.com/rs/zerolog/log"
@@ -97,6 +97,30 @@ func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.Ge
 			},
 		},
 		Error: nil,
+	}, nil
+}
+
+// GetAssetDescriptors implementation of gRPC service.
+func (serviceImpl *TrivyScanner) GetAssetDescriptors(context.Context, *service.GetAssetDescriptorsRequest) (*service.GetAssetDescriptorsResponse, error) {
+	return &service.GetAssetDescriptorsResponse{
+		AssetDescriptors: &domain.AssetDescriptors{
+			AttributesDescriptors: []*domain.AssetAttributesDescriptor{
+				{
+					SubType:     "dockerhub_image",
+					Description: "A dockerhub image",
+					Descriptors: []*domain.Descriptor{
+						{
+							Name:        "dockerhub_image.id",
+							Description: "The unique reference of this dockerhub image",
+							DataType:    "string",
+							DataSubtype: "",
+							AssetTypes:  []*domain.AssetType{{Type: "BINARY"}},
+						},
+					},
+				},
+			},
+			SubAttributesDescriptors: nil,
+		},
 	}, nil
 }
 
