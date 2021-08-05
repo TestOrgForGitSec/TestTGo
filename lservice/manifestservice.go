@@ -4,6 +4,7 @@ import (
 	"compliance-hub-plugin-trivy/scanner"
 	"context"
 	"encoding/json"
+	"fmt"
 	domain "github.com/deliveryblueprints/chplugin-go/v0.0.1/domainv0_0_1"
 	service "github.com/deliveryblueprints/chplugin-go/v0.0.1/servicev0_0_1"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
@@ -115,6 +116,7 @@ func mapToAssetAttributes(asset domain.Asset, data []byte) *domain.AssetAttribut
 			SubType:    asset.SubType,
 			Identifier: asset.Identifier,
 		},
+		Attributes: json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, asset.Identifier)),
 		SubAttributes: []*domain.AssetSubAttributes{
 			{
 				Type:          "trivy",
