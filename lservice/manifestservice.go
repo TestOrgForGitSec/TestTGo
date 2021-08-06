@@ -235,13 +235,13 @@ func mapToControl(results []TrivyVulnerabilities, assetId string, attributesId s
 	return []*domain.ControlEvaluation{control}
 }
 
-func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, af plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
-	receivedAssets := af.FetchAssets(req.Account.Uuid, "BINARY", map[string]*struct{}{
-		"container_image": {},
+func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
+	assets := assetFetcher.FetchAssets(req.Account.Uuid, req.AssetType, map[string]*struct{}{
+		"dockerhub_image": {},
 	})
 	var controls []*domain.ControlEvaluation
 
-	for _, asset := range receivedAssets {
+	for _, asset := range assets {
 		var scanResponse []byte
 		if err := scanner.Scan("Image", asset.Identifier, &scanResponse); err != nil {
 			log.Info().Msgf("Could not scan %s - ignoring (%s)", asset.Identifier, err)
