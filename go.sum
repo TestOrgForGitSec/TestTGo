@@ -68,6 +68,8 @@ github.com/deliveryblueprints/chplugin-go v1.1.0 h1:vCtg9jGI0Ic1Qm0tcpQgD/UGZhYm
 github.com/deliveryblueprints/chplugin-go v1.1.0/go.mod h1:OwKZzEzQM0bxwlpIIhmRnwKGmFCZjdzhWlnvfKpA91s=
 github.com/deliveryblueprints/chplugin-go v1.3.0 h1:VQr40PBHncb9CGDalIeCpnOGeVqtfokxBBcFVvIyVrQ=
 github.com/deliveryblueprints/chplugin-go v1.3.0/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
+github.com/deliveryblueprints/chplugin-go v1.4.0 h1:tHQnoo6qNVzS0kp2mZepFBRkHmDQ51tylnDMMQYvRvU=
+github.com/deliveryblueprints/chplugin-go v1.4.0/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-service-go v1.1.1 h1:lqYIxFEpFv/qmPWuB+CAK9GXJ3nT+7QL+GMPgOjb8y4=
 github.com/deliveryblueprints/chplugin-service-go v1.1.1/go.mod h1:G2srNAmlm0lTBA+XNU/8Tr9FvwPS+ayvISYhgjJGzqs=
 github.com/deliveryblueprints/chplugin-service-go v1.2.0 h1:f3wmCTMEmoEHyE+Wdb58yOlFurcmLKlp11lFgM4kXB0=
