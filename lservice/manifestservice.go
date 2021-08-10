@@ -176,6 +176,7 @@ func mapToControl(results []TrivyVulnerabilities, assetId string, attributesId s
 		Importance: "CRITICAL",
 		Passes:     []*domain.AssetResult{},
 		Failures:   []*domain.AssetResult{},
+		Type:       "check",
 	}
 	chCounters := CHCounter{}
 
