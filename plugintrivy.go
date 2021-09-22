@@ -4,7 +4,7 @@ import (
 	"compliance-hub-plugin-trivy/config"
 	"compliance-hub-plugin-trivy/lservice"
 	"fmt"
-	service "github.com/deliveryblueprints/chplugin-go/v0.0.1/servicev0_0_1"
+	service "github.com/deliveryblueprints/chplugin-go/v0.1.0/servicev0_1_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"

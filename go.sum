@@ -70,10 +70,14 @@ github.com/deliveryblueprints/chplugin-go v1.3.0 h1:VQr40PBHncb9CGDalIeCpnOGeVqt
 github.com/deliveryblueprints/chplugin-go v1.3.0/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-go v1.4.0 h1:tHQnoo6qNVzS0kp2mZepFBRkHmDQ51tylnDMMQYvRvU=
 github.com/deliveryblueprints/chplugin-go v1.4.0/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
+github.com/deliveryblueprints/chplugin-go v1.6.1 h1:Heca9RGB4Uh81e263rvcYJesNXlNnA5DhJ0yM/Zo6W8=
+github.com/deliveryblueprints/chplugin-go v1.6.1/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-service-go v1.1.1 h1:lqYIxFEpFv/qmPWuB+CAK9GXJ3nT+7QL+GMPgOjb8y4=
 github.com/deliveryblueprints/chplugin-service-go v1.1.1/go.mod h1:G2srNAmlm0lTBA+XNU/8Tr9FvwPS+ayvISYhgjJGzqs=
 github.com/deliveryblueprints/chplugin-service-go v1.2.0 h1:f3wmCTMEmoEHyE+Wdb58yOlFurcmLKlp11lFgM4kXB0=
 github.com/deliveryblueprints/chplugin-service-go v1.2.0/go.mod h1:7Rx4/lLa+2v4qfHuY7AjLE6zcVXhSgUaH6nfToYzGb8=
+github.com/deliveryblueprints/chplugin-service-go v1.4.0 h1:47jllj6t7xiOI6eMqJwyQpw9AY/nTGP2bQC6pYh+xtM=
+github.com/deliveryblueprints/chplugin-service-go v1.4.0/go.mod h1:RKrm5oPjEJyIippknd6FLgsWDFK4LH9NNq3luxeLeK4=
 github.com/deliveryblueprints/compliance-hub-grpc-test-client v0.1.0 h1:QmSvttD6b0N/cxPlOFc/ca2+bmn20muosbgtg3+dph4=
 github.com/deliveryblueprints/compliance-hub-grpc-test-client v0.1.0/go.mod h1:copX6FBw/fZDpE/7o8q0NbQ82moqntopTwJIoOv2T0w=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
@@ -521,6 +525,7 @@ google.golang.org/grpc v1.27.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8
 google.golang.org/grpc v1.37.1/go.mod h1:NREThFqKR1f3iQ6oBuvc5LadQuXVGo9rkm5ZGrQdJfM=
 google.golang.org/grpc v1.38.0 h1:/9BgsAsa5nWe26HqOlvlgJnqBuktYOLCgjCPqsa56W0=
 google.golang.org/grpc v1.38.0/go.mod h1:NREThFqKR1f3iQ6oBuvc5LadQuXVGo9rkm5ZGrQdJfM=
+google.golang.org/grpc v1.40.0 h1:AGJ0Ih4mHjSeibYkFGh1dD9KJ/eOtZ93I6hoHhukQ5Q=
 google.golang.org/protobuf v0.0.0-20200109180630-ec00e32a8dfd/go.mod h1:DFci5gLYBciE7Vtevhsrf46CRTquxDuWsQurQQe4oz8=
 google.golang.org/protobuf v0.0.0-20200221191635-4d8936d0db64/go.mod h1:kwYJMbMJ01Woi6D6+Kah6886xMZcty6N08ah7+eCXa0=
 google.golang.org/protobuf v0.0.0-20200228230310-ab0ca4ff8a60/go.mod h1:cfTl7dwQJ+fmap5saPgwCLgHXTUD7jkjRqWcaiX5VyM=
