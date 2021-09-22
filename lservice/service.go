@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	domain "github.com/deliveryblueprints/chplugin-go/v0.0.1/domainv0_0_1"
-	service "github.com/deliveryblueprints/chplugin-go/v0.0.1/servicev0_0_1"
+	domain "github.com/deliveryblueprints/chplugin-go/v0.1.0/domainv0_1_0"
+	service "github.com/deliveryblueprints/chplugin-go/v0.1.0/servicev0_1_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 )
@@ -46,16 +46,11 @@ func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.Ge
 			Version: "0.0.1",
 			AssetRoles: []*domain.AssetRole{
 				{
-					Role:                 "DECORATOR",
-					AssetType:            &domain.AssetType{Type: "BINARY"},
-					CreatesAttributes:    true,
-					CreatesSubAttributes: []string{"trivy"},
-					RequiresAssets:       true,
-				},
-				{
-					Role:           "ANALYSER",
-					AssetType:      &domain.AssetType{Type: "BINARY"},
-					RequiresAssets: true,
+					AssetType:                "BINARY",
+					Role:                     domain.Role_ANALYSER,
+					RequiresAttributes:       true,
+					RequiresAssets:           true,
+					RequiresBinaryAttributes: true,
 				},
 			},
 		},
@@ -77,7 +72,7 @@ func (serviceImpl *TrivyScanner) GetAssetDescriptors(context.Context, *service.G
 							Description: "The unique reference of this dockerhub image",
 							DataType:    "string",
 							DataSubtype: "trivy",
-							AssetTypes:  []*domain.AssetType{{Type: "BINARY"}},
+							AssetTypes:  []string{"BINARY"},
 						},
 					},
 				},
@@ -92,35 +87,17 @@ func (serviceImpl *TrivyScanner) ExecuteMaster(_ context.Context, _ *service.Exe
 }
 
 func (serviceImpl *TrivyScanner) ExecuteDecorator(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteDecoratorResponse, error) {
-	assets := assetFetcher.FetchAssets(req.Account.Uuid, req.AssetType, map[string]*struct{}{
-		"dockerhub_image": {},
-	})
-
-	var assetAttributes []*domain.AssetAttributes
-	for _, asset := range assets {
-		var scanResponse []byte
-		if err := scanner.Scan("Image", asset.Identifier, &scanResponse); err != nil {
-			log.Info().Msgf("Could not scan %s - ignoring (%s)", asset.Identifier, err)
-		} else {
-			log.Info().Msgf("payload size %d", len(scanResponse))
-			assetAttributes = append(assetAttributes, mapToAssetAttributes(asset, scanResponse))
-		}
-	}
-
-	return &service.ExecuteDecoratorResponse{
-		AssetAttributes: assetAttributes,
-		Error:           nil,
-	}, nil
+	return &service.ExecuteDecoratorResponse{}, nil
 }
 
 func mapToAssetAttributes(asset domain.Asset, data []byte) *domain.AssetAttributes {
 	return &domain.AssetAttributes{
 		Asset: &domain.MasterAsset{
-			Type:       asset.Type,
-			SubType:    asset.SubType,
-			Identifier: asset.Identifier,
+			Type:       asset.MasterAsset.Type,
+			SubType:    asset.MasterAsset.SubType,
+			Identifier: asset.MasterAsset.Identifier,
 		},
-		Attributes: json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, asset.Identifier)),
+		Attributes: json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, asset.MasterAsset.Identifier)),
 		SubAttributes: []*domain.AssetSubAttributes{
 			{
 				Type:          "trivy",
@@ -129,7 +106,6 @@ func mapToAssetAttributes(asset domain.Asset, data []byte) *domain.AssetAttribut
 		},
 	}
 }
-
 
 type NVD struct {
 	V3Score float32 `json:"V3Score"`
@@ -168,22 +144,43 @@ type CHCounter struct {
 	Counters [4]int
 }
 
-func mapToControl(results []TrivyVulnerabilities, assetId string, attributesId string) []*domain.ControlEvaluation {
-	control := &domain.ControlEvaluation{
-		Uuid:       "container_control",
-		Name:       "Container Analysis",
-		Standard:   "Container Vulnerabilities",
-		Importance: "CRITICAL",
-		Passes:     []*domain.AssetResult{},
-		Failures:   []*domain.AssetResult{},
-		Type:       "check",
+func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset) []*domain.Evaluation {
+
+	checksMap := make(map[string]*domain.Evaluation)
+
+	assetResult := domain.AssetResult{
+		AssetUuid: asset.Uuid,
+		Asset: &domain.MasterAsset{
+			Type:       asset.MasterAsset.Type,
+			SubType:    asset.MasterAsset.SubType,
+			Identifier: asset.MasterAsset.Identifier},
+		AttributesUuid: asset.AttributesUuid,
+		Details:        []*domain.DetailRow{},
 	}
-	chCounters := CHCounter{}
 
-	vulnerabilities := []*domain.RequirementBlock{}
-
+	var check *domain.Evaluation
+	var ok bool
 	for _, vulnerability := range results {
-		log.Trace().Msgf("DEMO Found vulnerability (%s)", vulnerability.VulnerabilityID)
+
+		log.Trace().Msgf("Found vulnerability (%s)", vulnerability.VulnerabilityID)
+
+		if check, ok = checksMap[vulnerability.VulnerabilityID]; !ok {
+			log.Trace().Msgf("Adding new check %s", vulnerability.VulnerabilityID)
+			checksMap[vulnerability.VulnerabilityID] = &domain.Evaluation{
+				Standard:      "Trivy Scan",
+				Code:          vulnerability.VulnerabilityID,
+				Name:          fmt.Sprintf("%s - %.75s", vulnerability.VulnerabilityID, vulnerability.Title),
+				Importance:    vulnerability.Severity,
+				DetailHeaders: []string{"Package", "Score"},
+				DetailTypes:   []string{"string", "number"},
+				Passes:        []*domain.AssetResult{},
+				Failures:      []*domain.AssetResult{},
+			}
+
+			check = checksMap[vulnerability.VulnerabilityID]
+		}
+
+		log.Trace().Msgf("Adding fail evaluation for %s:%s.%s)", vulnerability.VulnerabilityID, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
 
 		var score float32
 		if vulnerability.CVSS.Nvd.V3Score != 0 {
@@ -191,82 +188,58 @@ func mapToControl(results []TrivyVulnerabilities, assetId string, attributesId s
 		} else {
 			score = 5.6
 		}
-		switch vulnerability.Severity {
-		case "CRITICAL":
-			chCounters.Counters[0]++
-		case "HIGN":
-			chCounters.Counters[1]++
-		case "MEDIUM":
-			chCounters.Counters[2]++
-		case "LOW":
-			chCounters.Counters[3]++
-		default:
-			vulnerability.Severity = "LOW"
-			chCounters.Counters[3]++
 
-		}
-
-		vulnerabilities = append(vulnerabilities, &domain.RequirementBlock{
-			UniqueId: vulnerability.VulnerabilityID,
-			Name:     vulnerability.VulnerabilityID + "|-|" + fmt.Sprintf("%.75s", vulnerability.Title) + "|-|" + vulnerability.PkgName + " - " + vulnerability.InstalledVersion + "|-|" + vulnerability.Severity + "|-|" + fmt.Sprintf("%.1f", score),
+		assetResult.Details = append(assetResult.Details, &domain.DetailRow{
+			Data: []string{vulnerability.PkgName, fmt.Sprintf("%.1f", score)},
 		})
+
+		check.Failures = append(check.Failures, &assetResult)
 	}
 
-	vulnerabilities = append(vulnerabilities, &domain.RequirementBlock{
-		UniqueId: "CH_COUNTERS",
-		Name:     fmt.Sprintf("%d", chCounters.Counters[0]) + "|-|" + fmt.Sprintf("%d", chCounters.Counters[1]) + "|-|" + fmt.Sprintf("%d", chCounters.Counters[2]) + "|-|" + fmt.Sprintf("%d", chCounters.Counters[3]),
-	})
-
-	assetResult := &domain.AssetResult{
-		Uuid:                    assetId,
-		AttributesUuid:          attributesId,
-		PassedRequirementBlocks: []*domain.RequirementBlock{},
-		FailedRequirementBlocks: vulnerabilities,
+	// convert map and return
+	checks := make([]*domain.Evaluation, len(checksMap))
+	i := 0
+	for _, check := range checksMap {
+		log.Trace().Msgf("Adding check from map, fails %d", len(check.Failures))
+		checks[i] = check
+		i++
 	}
 
-	if len(vulnerabilities) > 210 {
-		log.Trace().Msgf("DEMO adding fail for %s, %s)", assetId, attributesId)
-		control.Failures = append(control.Failures, assetResult)
-	} else {
-		log.Trace().Msgf("DEMO adding pass for %s, %s)", assetId, attributesId)
-		control.Passes = append(control.Passes, assetResult)
-	}
-
-	log.Warn().Msgf("DEMO returning control with %d vulnerabilities", len(control.Failures))
-	return []*domain.ControlEvaluation{control}
+	log.Warn().Msgf("Returning %d failed checks", len(checks))
+	return checks
 }
 
 func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
 	assets := assetFetcher.FetchAssets(req.Account.Uuid, req.AssetType, map[string]*struct{}{
 		"dockerhub_image": {},
 	})
-	var controls []*domain.ControlEvaluation
+	var checks []*domain.Evaluation
 
 	for _, asset := range assets {
 		var scanResponse []byte
-		if err := scanner.Scan("Image", asset.Identifier, &scanResponse); err != nil {
-			log.Info().Msgf("Could not scan %s - ignoring (%s)", asset.Identifier, err)
+		if err := scanner.Scan("Image", asset.MasterAsset.Identifier, &scanResponse); err != nil {
+			log.Info().Msgf("Could not scan %s.%s.%s - ignoring (%s)", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier, err)
 		} else {
 			log.Info().Msgf("payload size %d", len(scanResponse))
 			var run TrivyRun
 			if err := json.Unmarshal(scanResponse, &run); err != nil {
-				log.Error().Msg("oops - trivy hacking failed - oh well, we tried!")
+				log.Error().Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
 			} else {
 				if len(run.ScanOutput) > 0 {
 					if len(run.ScanOutput[0].ImageScanOutput) > 0 {
 						log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities))
 
-						c := mapToControl(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, asset.Uuid, asset.AttributesUuid)
-						log.Warn().Msgf("found %d trivy controls", len(c))
-						controls = append(controls, c...)
+						c := mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, asset)
+						log.Warn().Msgf("found %d trivy checks", len(c))
+						checks = append(checks, c...)
 					}
 				}
 			}
 		}
 	}
 
-	log.Warn().Msgf("found total %d trivy controls", len(controls))
+	log.Warn().Msgf("Found total %d failed checks", len(checks))
 	return &service.ExecuteAnalyserResponse{
-		Controls: controls,
+		Checks: checks,
 	}, nil
 }

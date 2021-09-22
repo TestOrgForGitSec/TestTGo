@@ -6,7 +6,7 @@ services:
     privileged: true
     hostname: compliancehub-plugin-trivy
     environment:
-      - CH_TRIVY_REMOTE="http://trivy-server:5004"
+      - CH_TRIVY_REMOTE="http://trivy-server:5005"
     networks: 
       - trivy_network
     ports:
