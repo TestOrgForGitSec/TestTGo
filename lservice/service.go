@@ -140,47 +140,39 @@ type TrivyRun struct {
 	ScanOutput  []TrivyOutput `json:"scanOutput"`
 }
 
-type CHCounter struct {
-	Counters [4]int
+type vulnerabilityAssetCheck struct {
+	id          string
+	title       string
+	severity    string
+	assetResult *domain.AssetResult
 }
 
-func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset) []*domain.Evaluation {
+func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
 
-	checksMap := make(map[string]*domain.Evaluation)
-
-	assetResult := domain.AssetResult{
-		AssetUuid: asset.Uuid,
-		Asset: &domain.MasterAsset{
-			Type:       asset.MasterAsset.Type,
-			SubType:    asset.MasterAsset.SubType,
-			Identifier: asset.MasterAsset.Identifier},
-		AttributesUuid: asset.AttributesUuid,
-		Details:        []*domain.DetailRow{},
-	}
-
-	var check *domain.Evaluation
+	assetChecks := map[string]vulnerabilityAssetCheck{}
+	var assetCheck vulnerabilityAssetCheck
 	var ok bool
 	for _, vulnerability := range results {
-
-		log.Trace().Msgf("Found vulnerability (%s)", vulnerability.VulnerabilityID)
-
-		if check, ok = checksMap[vulnerability.VulnerabilityID]; !ok {
-			log.Trace().Msgf("Adding new check %s", vulnerability.VulnerabilityID)
-			checksMap[vulnerability.VulnerabilityID] = &domain.Evaluation{
-				Standard:      "Trivy Scan",
-				Code:          vulnerability.VulnerabilityID,
-				Name:          fmt.Sprintf("%s - %.75s", vulnerability.VulnerabilityID, vulnerability.Title),
-				Importance:    vulnerability.Severity,
-				DetailHeaders: []string{"Package", "Score"},
-				DetailTypes:   []string{"string", "number"},
-				Passes:        []*domain.AssetResult{},
-				Failures:      []*domain.AssetResult{},
+		if assetCheck, ok = assetChecks[vulnerability.VulnerabilityID]; !ok {
+			assetChecks[vulnerability.VulnerabilityID] = vulnerabilityAssetCheck{
+				id:       vulnerability.VulnerabilityID,
+				title:    vulnerability.Title,
+				severity: vulnerability.Severity,
+				assetResult: &domain.AssetResult{
+					AssetUuid: asset.Uuid,
+					Asset: &domain.MasterAsset{
+						Type:       asset.MasterAsset.Type,
+						SubType:    asset.MasterAsset.SubType,
+						Identifier: asset.MasterAsset.Identifier},
+					AttributesUuid: asset.AttributesUuid,
+					Details:        []*domain.DetailRow{},
+				},
 			}
 
-			check = checksMap[vulnerability.VulnerabilityID]
+			assetCheck = assetChecks[vulnerability.VulnerabilityID]
 		}
 
-		log.Trace().Msgf("Adding fail evaluation for %s:%s.%s)", vulnerability.VulnerabilityID, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
+		log.Trace().Msgf("Adding fail detail for %s:%s.%s)", vulnerability.VulnerabilityID, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
 
 		var score float32
 		if vulnerability.CVSS.Nvd.V3Score != 0 {
@@ -189,23 +181,34 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset) []*doma
 			score = 5.6
 		}
 
-		assetResult.Details = append(assetResult.Details, &domain.DetailRow{
+		assetCheck.assetResult.Details = append(assetCheck.assetResult.Details, &domain.DetailRow{
 			Data: []string{vulnerability.PkgName, fmt.Sprintf("%.1f", score)},
 		})
-
-		check.Failures = append(check.Failures, &assetResult)
 	}
 
-	// convert map and return
-	checks := make([]*domain.Evaluation, len(checksMap))
-	i := 0
-	for _, check := range checksMap {
-		log.Trace().Msgf("Adding check from map, fails %d", len(check.Failures))
-		checks[i] = check
-		i++
+	var check *domain.Evaluation
+	for vulnerabilityId, aCheck := range assetChecks {
+
+		if check, ok = checks[vulnerabilityId]; !ok {
+			log.Trace().Msgf("Adding new check %s", vulnerabilityId)
+			checks[vulnerabilityId] = &domain.Evaluation{
+				Standard:      "Trivy Scan",
+				Code:          vulnerabilityId,
+				Name:          fmt.Sprintf("%s - %.75s", vulnerabilityId, aCheck.title),
+				Importance:    aCheck.severity,
+				DetailHeaders: []string{"Package", "Score"},
+				DetailTypes:   []string{"string", "number"},
+				Passes:        []*domain.AssetResult{},
+				Failures:      []*domain.AssetResult{},
+			}
+
+			check = checks[vulnerabilityId]
+		}
+		check.Failures = append(check.Failures, aCheck.assetResult)
 	}
 
-	log.Warn().Msgf("Returning %d failed checks", len(checks))
+	log.Warn().Msgf("Appended %d failed checks for asset %s", len(assetChecks), asset.Uuid)
+
 	return checks
 }
 
@@ -213,7 +216,7 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 	assets := assetFetcher.FetchAssets(req.Account.Uuid, req.AssetType, map[string]*struct{}{
 		"dockerhub_image": {},
 	})
-	var checks []*domain.Evaluation
+	checks := map[string]*domain.Evaluation{}
 
 	for _, asset := range assets {
 		var scanResponse []byte
@@ -229,9 +232,8 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 					if len(run.ScanOutput[0].ImageScanOutput) > 0 {
 						log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities))
 
-						c := mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, asset)
-						log.Warn().Msgf("found %d trivy checks", len(c))
-						checks = append(checks, c...)
+						checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, asset, checks)
+						log.Warn().Msgf("total so far : %d trivy checks", len(checks))
 					}
 				}
 			}
@@ -239,7 +241,17 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 	}
 
 	log.Warn().Msgf("Found total %d failed checks", len(checks))
+
+	// convert map and return
+	checkList := make([]*domain.Evaluation, len(checks))
+	i := 0
+	for _, check := range checks {
+		log.Trace().Msgf("Adding check from map, fails %d", len(check.Failures))
+		checkList[i] = check
+		i++
+	}
+
 	return &service.ExecuteAnalyserResponse{
-		Checks: checks,
+		Checks: checkList,
 	}, nil
 }
