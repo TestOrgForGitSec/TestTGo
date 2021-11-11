@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	domain "github.com/deliveryblueprints/chplugin-go/v0.1.0/domainv0_1_0"
-	service "github.com/deliveryblueprints/chplugin-go/v0.1.0/servicev0_1_0"
+	domain "github.com/deliveryblueprints/chplugin-go/v0.2.0/domainv0_2_0"
+	service "github.com/deliveryblueprints/chplugin-go/v0.2.0/servicev0_2_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 )
@@ -43,7 +43,7 @@ func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.Ge
 		Manifest: &domain.Manifest{
 			Uuid:    "mg19e330-8827-11eb-8dcd-0242ac130003",
 			Name:    "Docker Hub Scanner",
-			Version: "0.0.1",
+			Version: "0.2.0",
 			AssetRoles: []*domain.AssetRole{
 				{
 					AssetType:                "BINARY",
@@ -147,7 +147,7 @@ type vulnerabilityAssetCheck struct {
 	assetResult *domain.AssetResult
 }
 
-func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
+func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile *domain.AssetProfile, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
 
 	assetChecks := map[string]vulnerabilityAssetCheck{}
 	var assetCheck vulnerabilityAssetCheck
@@ -164,7 +164,8 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, checks 
 						Type:       asset.MasterAsset.Type,
 						SubType:    asset.MasterAsset.SubType,
 						Identifier: asset.MasterAsset.Identifier},
-					AttributesUuid: asset.AttributesUuid,
+					AttributesUuid: profile.AttributesUuid,
+					ProfileUuid:    profile.Uuid,
 					Details:        []*domain.DetailRow{},
 				},
 			}
@@ -213,27 +214,36 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, checks 
 }
 
 func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
-	assets := assetFetcher.FetchAssets(req.Account.Uuid, req.AssetType, map[string]*struct{}{
-		"dockerhub_image": {},
+	assets := assetFetcher.FetchAssets(plugin.AssetFetchRequest{
+		AccountID: req.Account.Uuid,
+		AssetType: req.AssetType,
+		AssetSubAttributeTypes: map[string]*struct{}{
+			"dockerhub_image": {},
+		},
+		Identifiers:        req.AssetIdentifiers,
+		ProfileIdentifiers: req.ProfileIdentifiers,
 	})
 	checks := map[string]*domain.Evaluation{}
 
 	for _, asset := range assets {
-		var scanResponse []byte
-		if err := scanner.Scan("Image", asset.MasterAsset.Identifier, &scanResponse); err != nil {
-			log.Info().Msgf("Could not scan %s.%s.%s - ignoring (%s)", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier, err)
-		} else {
-			log.Info().Msgf("payload size %d", len(scanResponse))
-			var run TrivyRun
-			if err := json.Unmarshal(scanResponse, &run); err != nil {
-				log.Error().Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
+		for _, profile := range asset.Profiles {
+			// TODO profiles would be tags; for now, don't handle them- but they are there.
+			var scanResponse []byte
+			if err := scanner.Scan("Image", asset.MasterAsset.Identifier, &scanResponse); err != nil {
+				log.Info().Msgf("Could not scan %s.%s.%s - ignoring (%s)", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier, err)
 			} else {
-				if len(run.ScanOutput) > 0 {
-					if len(run.ScanOutput[0].ImageScanOutput) > 0 {
-						log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities))
+				log.Info().Msgf("payload size %d", len(scanResponse))
+				var run TrivyRun
+				if err := json.Unmarshal(scanResponse, &run); err != nil {
+					log.Error().Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
+				} else {
+					if len(run.ScanOutput) > 0 {
+						if len(run.ScanOutput[0].ImageScanOutput) > 0 {
+							log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities))
 
-						checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, asset, checks)
-						log.Warn().Msgf("total so far : %d trivy checks", len(checks))
+							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, asset, profile, checks)
+							log.Warn().Msgf("total so far : %d trivy checks", len(checks))
+						}
 					}
 				}
 			}
