@@ -38,6 +38,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/deliveryblueprints/chplugin-go v1.9.1 h1:jCKoA6wwpk2qpOdFLkUDioN36NbgXcOG0ExWsRiOb5o=
 github.com/deliveryblueprints/chplugin-go v1.9.1/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
+github.com/deliveryblueprints/chplugin-go v1.10.4 h1:bAQYequcgTTcF6cwbAmyz8Uq7vF/XoSwd/knJMEHvgI=
+github.com/deliveryblueprints/chplugin-go v1.10.4/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-service-go v1.5.3 h1:QRYnorLDQ8z4zESmpLLS+snlm5+jVpvsZyTIgOVN/nM=
 github.com/deliveryblueprints/chplugin-service-go v1.5.3/go.mod h1:bQgQVJR4y3fHGbTm5oFKASNVPtPooAbFbYx5Delfz5o=
 github.com/deliveryblueprints/compliance-hub-grpc-test-client v0.2.0/go.mod h1:UMQuffxpWP4b4R5yTPPDVGLdY6o4iYvxAc2lhAhqRUo=
@@ -190,6 +192,8 @@ github.com/rs/zerolog v1.21.0 h1:Q3vdXlfLNT+OftyBHsU0Y445MD+8m8axjKgf2si0QcM=
 github.com/rs/zerolog v1.21.0/go.mod h1:ZPhntP/xmq1nnND05hhpAh2QMhSsA4UN3MGZ6O2J3hM=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
+github.com/satori/go.uuid v1.2.0 h1:0uYX9dsZ2yD7q2RtLRtPSdGDWzjeM3TbMJP9utgA0ww=
+github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
