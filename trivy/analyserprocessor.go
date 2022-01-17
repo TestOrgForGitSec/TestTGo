@@ -31,12 +31,12 @@ func (p *analyserProcessor) sendAndProcessAssetRequests(req *service.ExecuteRequ
 			Uuid: req.Account.Uuid,
 			Type: req.Account.Type,
 		},
-		Type: "CODE",
+		Type: "BINARY",
 		SubTypes: []string{
-			"github_repo",
+			"dockerhub_image",
 		},
 		Identifiers: req.AssetIdentifiers,
-		// ProfileIdentifiers intentionally unused here; request none, get root assets, list / filter branches from those
+		ProfileIdentifiers: req.ProfileIdentifiers,
 	}
 
 	resp, _ := anypb.New(assetRequest)
@@ -51,9 +51,9 @@ func (p *analyserProcessor) sendAndProcessAssetRequests(req *service.ExecuteRequ
 	}
 
 	var assets []*domain.Asset
-	wait := 5 * time.Second
+	timeout := 5 * time.Second
 	for {
-		in, rErr := p.readWithTimeout(p.ctx, 5*wait)
+		in, rErr := p.readWithTimeout(p.ctx, timeout)
 
 		if rErr == context.DeadlineExceeded || rErr == context.Canceled {
 			p.log.Error().Err(rErr).Msg("Aborting stream")

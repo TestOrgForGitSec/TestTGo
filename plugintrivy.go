@@ -23,8 +23,8 @@ func getNetListener(address string, port uint) net.Listener {
 }
 
 func main() {
-	logging.InitLogging()
 	config.InitConfig()
+	logging.InitLogging()
 
 	netListener := getNetListener(config.Config.GetString("server.address"), config.Config.GetUint("server.port"))
 	gRPCServer := grpc.NewServer()
