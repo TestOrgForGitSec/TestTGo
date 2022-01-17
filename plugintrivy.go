@@ -2,10 +2,10 @@ package main
 
 import (
 	"compliance-hub-plugin-trivy/config"
-	"compliance-hub-plugin-trivy/lservice"
+	"compliance-hub-plugin-trivy/logging"
+	"compliance-hub-plugin-trivy/trivy"
 	"fmt"
-	service "github.com/deliveryblueprints/chplugin-go/v0.2.0/servicev0_2_0"
-	"github.com/deliveryblueprints/chplugin-service-go/plugin"
+	service "github.com/deliveryblueprints/chplugin-go/v0.3.0/servicev0_3_0"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"net"
@@ -23,17 +23,14 @@ func getNetListener(address string, port uint) net.Listener {
 }
 
 func main() {
-
 	config.InitConfig()
+	logging.InitLogging()
 
 	netListener := getNetListener(config.Config.GetString("server.address"), config.Config.GetUint("server.port"))
 	gRPCServer := grpc.NewServer()
-
-	chPluginServiceImpl := plugin.CHPluginServiceBuilder(lservice.NewTrivyScanner())
-	service.RegisterCHPluginServiceServer(gRPCServer, chPluginServiceImpl)
+	service.RegisterCHPluginServiceServer(gRPCServer, trivy.NewTrivyScanner())
 
 	// start the server
-	log.Info()
 	if err := gRPCServer.Serve(netListener); err != nil {
 		log.Fatal().Msgf("failed to serve: %s", err)
 	}
