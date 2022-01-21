@@ -3,9 +3,9 @@ package main
 import (
 	"compliance-hub-plugin-trivy/config"
 	"compliance-hub-plugin-trivy/logging"
-	"compliance-hub-plugin-trivy/trivy"
 	"fmt"
 	service "github.com/deliveryblueprints/chplugin-go/v0.3.0/servicev0_3_0"
+	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"net"
@@ -28,7 +28,8 @@ func main() {
 
 	netListener := getNetListener(config.Config.GetString("server.address"), config.Config.GetUint("server.port"))
 	gRPCServer := grpc.NewServer()
-	service.RegisterCHPluginServiceServer(gRPCServer, trivy.NewTrivyScanner())
+	chPluginServiceImpl := plugin.CHPluginServiceBuilder(NewTrivyScanner())
+	service.RegisterCHPluginServiceServer(gRPCServer, chPluginServiceImpl)
 
 	// start the server
 	if err := gRPCServer.Serve(netListener); err != nil {
