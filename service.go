@@ -1,11 +1,13 @@
-package trivy
+package main
 
 import (
+	"compliance-hub-plugin-trivy/scanner"
 	"context"
 	"encoding/json"
 	"fmt"
 	domain "github.com/deliveryblueprints/chplugin-go/v0.3.0/domainv0_3_0"
 	service "github.com/deliveryblueprints/chplugin-go/v0.3.0/servicev0_3_0"
+	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 )
 
@@ -25,18 +27,18 @@ type AssetDTO struct {
 	SubAttributes []SubAttributesDTO `json:"subAttributes,omitEmpty"`
 }
 
-//TrivyScanner is an implementation of ManifiestService Grpc Service.
-type trivyScanner struct {
-	service.CHPluginServiceServer
+//TrivyScanner is a implementation of ManifiestService Grpc Service.
+type TrivyScanner struct {
+	plugin.CHPluginService
 }
 
-// NewTrivyScanner returns the implementation.
-func NewTrivyScanner() service.CHPluginServiceServer {
-	return &trivyScanner{}
+//NewManifestServiceGrpcImpl returns the pointer to the implementation.
+func NewTrivyScanner() *TrivyScanner {
+	return &TrivyScanner{}
 }
 
-//GetManifest implementation of gRPC service.
-func (ts *trivyScanner) GetManifest(ctx context.Context, in *service.GetManifestRequest) (*service.GetManifestResponse, error) {
+//GetManifest implementiation of gRPC service.
+func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.GetManifestRequest) (*service.GetManifestResponse, error) {
 	return &service.GetManifestResponse{
 		Manifest: &domain.Manifest{
 			Uuid:    "mg19e330-8827-11eb-8dcd-0242ac130003",
@@ -57,7 +59,7 @@ func (ts *trivyScanner) GetManifest(ctx context.Context, in *service.GetManifest
 }
 
 // GetAssetDescriptors implementation of gRPC service.
-func (ts *trivyScanner) GetAssetDescriptors(context.Context, *service.GetAssetDescriptorsRequest) (*service.GetAssetDescriptorsResponse, error) {
+func (serviceImpl *TrivyScanner) GetAssetDescriptors(context.Context, *service.GetAssetDescriptorsRequest) (*service.GetAssetDescriptorsResponse, error) {
 	return &service.GetAssetDescriptorsResponse{
 		AssetDescriptors: &domain.AssetDescriptors{
 			AttributesDescriptors: []*domain.AssetAttributesDescriptor{
@@ -80,35 +82,29 @@ func (ts *trivyScanner) GetAssetDescriptors(context.Context, *service.GetAssetDe
 	}, nil
 }
 
-func (ts *trivyScanner) Master(stream service.CHPluginService_MasterServer) error {
-	return fmt.Errorf("unimplemented")
+func (serviceImpl *TrivyScanner) ExecuteMaster(_ context.Context, _ *service.ExecuteRequest) (*service.ExecuteMasterResponse, error) {
+	return &service.ExecuteMasterResponse{}, nil
 }
 
-func (ts *trivyScanner) Decorator(stream service.CHPluginService_DecoratorServer) error {
-	return fmt.Errorf("unimplemented")
+func (serviceImpl *TrivyScanner) ExecuteDecorator(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteDecoratorResponse, error) {
+	return &service.ExecuteDecoratorResponse{}, nil
 }
 
-func (ts *trivyScanner) Analyser(stream service.CHPluginService_AnalyserServer) error {
-	log.Info().Msgf("Analyser execution stream initiated")
-	defer log.Info().Msgf("Analyser execution stream completed")
-
-	return NewAnalyserProcessor(stream.Context(), &stream, ts).Process()
-}
-
-func (ts *trivyScanner) Aggregator(stream service.CHPluginService_AggregatorServer) error {
-	return fmt.Errorf("unimplemented")
-}
-
-func (ts *trivyScanner) Assessor(stream service.CHPluginService_AssessorServer) error {
-	return fmt.Errorf("unimplemented")
-}
-
-func (ts *trivyScanner) ExecuteAggregator(context.Context, *service.ExecuteRequest) (*service.ExecuteAggregatorResponse, error) {
-	return nil, fmt.Errorf("unimplemented")
-}
-
-func (ts *trivyScanner) ExecuteAssessor(context.Context, *service.ExecuteRequest) (*service.ExecuteAssessorResponse, error) {
-	return nil, fmt.Errorf("unimplemented")
+func mapToAssetAttributes(asset domain.Asset, data []byte) *domain.AssetAttributes {
+	return &domain.AssetAttributes{
+		Asset: &domain.MasterAsset{
+			Type:       asset.MasterAsset.Type,
+			SubType:    asset.MasterAsset.SubType,
+			Identifier: asset.MasterAsset.Identifier,
+		},
+		Attributes: json.RawMessage(fmt.Sprintf(`{"id":"%s"}`, asset.MasterAsset.Identifier)),
+		SubAttributes: []*domain.AssetSubAttributes{
+			{
+				Type:          "trivy",
+				SubAttributes: data,
+			},
+		},
+	}
 }
 
 type NVD struct {
@@ -151,7 +147,7 @@ type vulnerabilityAssetCheck struct {
 	assetResult *domain.AssetResult
 }
 
-func mapToEvaluation(results []TrivyVulnerabilities, asset *domain.Asset, profile *domain.AssetProfile, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
+func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile *domain.AssetProfile, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
 
 	assetChecks := map[string]vulnerabilityAssetCheck{}
 	var assetCheck vulnerabilityAssetCheck
@@ -215,4 +211,59 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset *domain.Asset, profil
 	log.Warn().Msgf("Appended %d failed checks for asset %s", len(assetChecks), asset.Uuid)
 
 	return checks
+}
+
+func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
+	assets, err := assetFetcher.FetchAssets(plugin.AssetFetchRequest{
+		AccountID:          req.Account.Uuid,
+		AssetType:          req.AssetType,
+		AssetSubTypes:      []string{"dockerhub_image"},
+		Identifiers:        req.AssetIdentifiers,
+		ProfileIdentifiers: req.ProfileIdentifiers,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	checks := map[string]*domain.Evaluation{}
+
+	for _, asset := range assets {
+		for _, profile := range asset.Profiles {
+			// TODO profiles would be tags; for now, don't handle them- but they are there.
+			var scanResponse []byte
+			if err := scanner.Scan("Image", asset.MasterAsset.Identifier, &scanResponse); err != nil {
+				log.Info().Msgf("Could not scan %s.%s.%s - ignoring (%s)", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier, err)
+			} else {
+				log.Info().Msgf("payload size %d", len(scanResponse))
+				var run TrivyRun
+				if err := json.Unmarshal(scanResponse, &run); err != nil {
+					log.Error().Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
+				} else {
+					if len(run.ScanOutput) > 0 {
+						if len(run.ScanOutput[0].ImageScanOutput) > 0 {
+							log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities))
+
+							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, *asset, profile, checks)
+							log.Warn().Msgf("total so far : %d trivy checks", len(checks))
+						}
+					}
+				}
+			}
+		}
+	}
+
+	log.Warn().Msgf("Found total %d failed checks", len(checks))
+
+	// convert map and return
+	checkList := make([]*domain.Evaluation, len(checks))
+	i := 0
+	for _, check := range checks {
+		log.Trace().Msgf("Adding check from map, fails %d", len(check.Failures))
+		checkList[i] = check
+		i++
+	}
+
+	return &service.ExecuteAnalyserResponse{
+		Checks: checkList,
+	}, nil
 }
