@@ -75,7 +75,7 @@ func scanImage(a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) er
 	// execute the trivy client against each of
 	var tarballData []byte
 	for _, binAttrib := range ap.BinAttributes {
-		if binAttrib.Version == "LATEST" {
+		if binAttrib.Version == "MOST_RECENT" {
 			tarballData = binAttrib.Data
 			break
 		}
