@@ -27,7 +27,7 @@ func main() {
 	logging.InitLogging()
 
 	netListener := getNetListener(config.Config.GetString("server.address"), config.Config.GetUint("server.port"))
-	gRPCServer := grpc.NewServer(grpc.MaxRecvMsgSize(config.Config.GetInt("server.max_recv_size")))
+	gRPCServer := grpc.NewServer(grpc.MaxRecvMsgSize(config.Config.GetInt("grpc.maxrecvsize")))
 	chPluginServiceImpl := plugin.CHPluginServiceBuilder(NewTrivyScanner())
 	service.RegisterCHPluginServiceServer(gRPCServer, chPluginServiceImpl)
 
