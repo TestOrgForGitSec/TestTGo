@@ -231,7 +231,7 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 		for _, profile := range asset.Profiles {
 			// TODO profiles would be tags; for now, don't handle them- but they are there.
 			var scanResponse []byte
-			if err := scanner.Scan("Image", asset.MasterAsset.Identifier, &scanResponse); err != nil {
+			if err := scanner.Scan("Image", asset.MasterAsset, profile, &scanResponse); err != nil {
 				log.Info().Msgf("Could not scan %s.%s.%s - ignoring (%s)", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier, err)
 			} else {
 				log.Info().Msgf("payload size %d", len(scanResponse))

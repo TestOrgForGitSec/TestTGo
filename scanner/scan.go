@@ -4,6 +4,8 @@ import (
 	"compliance-hub-plugin-trivy/config"
 	"encoding/json"
 	"errors"
+	"fmt"
+	domain "github.com/deliveryblueprints/chplugin-go/v0.3.0/domainv0_3_0"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -13,14 +15,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func Scan(scanType, scanUrl string, response *[]byte) error {
+func Scan(scanType string, a *domain.MasterAsset, ap *domain.AssetProfile, response *[]byte) error {
 
 	scanRunUUID := uuid.NewString()
 
-	log.Info().Msgf("Starting Scan run %s", scanRunUUID)
+	log.Info().Msgf("Starting Scan run %s, asset: %s, profile: %s", scanRunUUID, a.Identifier, ap.Identifier)
 
-	if scanType == EmptyString || scanUrl == EmptyString || response == nil {
-		log.Info().Msgf("Incorrect Scan params : scanType=%s, scanUrl=%s, or response byte array was nil.", scanType, scanUrl)
+	if scanType == EmptyString || response == nil || (scanType == "Registry" && a.Identifier == EmptyString) {
+		log.Info().Msgf("Incorrect Scan params : scanType=%s, scanUrl=%s, or response byte array was nil.", scanType, a.Identifier)
 		return errors.New("invalid scan parameters")
 	}
 
@@ -33,15 +35,15 @@ func Scan(scanType, scanUrl string, response *[]byte) error {
 
 	switch scanType {
 	case "Image":
-		log.Info().Msgf("Scanning Image %s", scanUrl)
-		if err := scanImage(scanUrl, outDir); err != nil {
+		log.Info().Msgf("Scanning Image %s", a.Identifier)
+		if err := scanImage(a, ap, outDir); err != nil {
 			log.Error().Err(err).Msg("Scan Image Failed")
 			return err
 		}
 
 	case "Registry":
-		log.Info().Msgf("Scanning Image Registry %s", scanUrl)
-		if err := scanRegistry(scanUrl); err != nil {
+		log.Info().Msgf("Scanning Image Registry %s", a.Identifier)
+		if err := scanRegistry(a.Identifier); err != nil {
 			log.Error().Err(err).Msg("Scan Registry Failed")
 			return err
 		}
@@ -59,13 +61,39 @@ func Scan(scanType, scanUrl string, response *[]byte) error {
 	return nil
 }
 
-func scanImage(imageUrl, outDir string) error {
-	// execute the trivy client
+func writeTarballTemp(data []byte) (*os.File, error) {
+	f, err := os.CreateTemp("", "docker-image")
+	if err != nil {
+		return nil, err
+	}
 
-	imageName := strings.ReplaceAll(imageUrl, Slash, UnderScore)
+	err = ioutil.WriteFile(f.Name(), data, FilePerm)
+	return f, err
+}
+
+func scanImage(a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) error {
+	// execute the trivy client against each of
+	var tarballData []byte
+	for _, binAttrib := range ap.BinAttributes {
+		if binAttrib.Version == "MOST_RECENT" {
+			tarballData = binAttrib.Data
+			break
+		}
+	}
+	if len(tarballData) == 0 {
+		return fmt.Errorf("unable to find LATEST binary attributes for asset %s, profile %s", a.Identifier, ap.Identifier)
+	}
+
+	tarballFile, err := writeTarballTemp(tarballData)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tarballFile.Name())
+
+	imageName := strings.ReplaceAll(a.Identifier, Slash, UnderScore)
 	imageName = strings.ReplaceAll(imageName, Colon, UnderScore)
 	outputFile := outDir + Slash + imageName + DoubleUnderScore + OutputFileName
-	cmd := exec.Command(App, "-d", RunAsClient, SpecifyFormat, OutputFormat, SpecifyOutput, outputFile, SpecifyRemote, config.Config.GetString("trivy.remote"), imageUrl)
+	cmd := exec.Command(App, "-d", RunAsClient, SpecifyFormat, OutputFormat, SpecifyInputFile, tarballFile.Name(), SpecifyOutput, outputFile, SpecifyRemote, config.Config.GetString("trivy.remote"))
 
 	scanLog, err := cmd.CombinedOutput()
 	if err != nil {
