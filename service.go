@@ -195,6 +195,7 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile
 }
 
 func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
+	log.Debug().Msgf("Request received: %s", req)
 	assets, err := assetFetcher.FetchAssets(plugin.AssetFetchRequest{
 		AccountID:          req.Account.Uuid,
 		AssetType:          req.AssetType,

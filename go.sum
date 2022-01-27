@@ -42,6 +42,8 @@ github.com/deliveryblueprints/chplugin-go v1.10.4 h1:bAQYequcgTTcF6cwbAmyz8Uq7vF
 github.com/deliveryblueprints/chplugin-go v1.10.4/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-service-go v1.9.0 h1:dPILIVL5o2gSYoc9c5FdiX2NGsF0u1b9dPOFOyKXW/g=
 github.com/deliveryblueprints/chplugin-service-go v1.9.0/go.mod h1:f6dr0vQUnDXhMhuTzU9OB0iSyG1y4BeZ5dUUavVECWg=
+github.com/deliveryblueprints/chplugin-service-go v1.9.1-0.20220125180255-59261e22e514 h1:wO+NCYjVu315uC5cfxmkelIbdaNECVrwCLkP8mw539M=
+github.com/deliveryblueprints/chplugin-service-go v1.9.1-0.20220125180255-59261e22e514/go.mod h1:f6dr0vQUnDXhMhuTzU9OB0iSyG1y4BeZ5dUUavVECWg=
 github.com/deliveryblueprints/compliance-hub-grpc-test-client v0.2.0/go.mod h1:UMQuffxpWP4b4R5yTPPDVGLdY6o4iYvxAc2lhAhqRUo=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
