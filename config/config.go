@@ -15,7 +15,7 @@ func InitConfig() {
 
 	Config.SetDefault("server.address", "127.0.0.1")
 	Config.SetDefault("server.port", 5004)
-	Config.SetDefault("grpc.maxrecvsize", 1 * 1024 * 1024 * 1024) // 1 GiB
+	Config.SetDefault("grpc.maxrecvsize", 1*1024*1024*1024) // 1 GiB
 
 	Config.SetDefault("trivy.remote", "http://127.0.0.1:5004")
 

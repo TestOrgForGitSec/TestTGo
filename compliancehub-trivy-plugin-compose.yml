@@ -6,15 +6,14 @@ services:
     privileged: true
     hostname: compliancehub-plugin-trivy
     environment:
-      - CH_TRIVY_REMOTE="http://trivy-server:5005"
+      - CH_TRIVY_REMOTE=http://trivy-server:5005
+      - CH_SERVER_ADDRESS=0.0.0.0
     networks: 
       - trivy_network
     ports:
       - '5004:5004'
-    volumes:      
-      - '/var/run/docker.sock:/var/run/docker.sock'
   trivy-server:
-    image: aquasec/trivy:latest
+    image: aquasec/trivy:0.18.0
     container_name: trivy-server    
     command: server --listen ':5005'
     privileged: true
@@ -25,8 +24,5 @@ services:
       - '5005:5005'
     volumes:
       - './trivy-server/output:/trivy-server/output'
-      - '/var/run/docker.sock:/var/run/docker.sock'    
 networks:
   trivy_network:
-
-  

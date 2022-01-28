@@ -6,13 +6,12 @@ import (
 	"errors"
 	"fmt"
 	domain "github.com/deliveryblueprints/chplugin-go/v0.3.0/domainv0_3_0"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 )
 
 func Scan(scanType string, a *domain.MasterAsset, ap *domain.AssetProfile, response *[]byte) error {
@@ -75,13 +74,13 @@ func scanImage(a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) er
 	// execute the trivy client against each of
 	var tarballData []byte
 	for _, binAttrib := range ap.BinAttributes {
-		if binAttrib.Version == "MOST_RECENT" {
+		if binAttrib.Version == "CH_MOST_RECENT" || binAttrib.Version == ap.Identifier {
 			tarballData = binAttrib.Data
 			break
 		}
 	}
 	if len(tarballData) == 0 {
-		return fmt.Errorf("unable to find LATEST binary attributes for asset %s, profile %s", a.Identifier, ap.Identifier)
+		return fmt.Errorf("unable to find binary attributes for asset %s, profile %s", a.Identifier, ap.Identifier)
 	}
 
 	tarballFile, err := writeTarballTemp(tarballData)

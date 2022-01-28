@@ -60,26 +60,7 @@ func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.Ge
 
 // GetAssetDescriptors implementation of gRPC service.
 func (serviceImpl *TrivyScanner) GetAssetDescriptors(context.Context, *service.GetAssetDescriptorsRequest) (*service.GetAssetDescriptorsResponse, error) {
-	return &service.GetAssetDescriptorsResponse{
-		AssetDescriptors: &domain.AssetDescriptors{
-			AttributesDescriptors: []*domain.AssetAttributesDescriptor{
-				{
-					SubType:     "dockerhub_image",
-					Description: "A dockerhub image",
-					Descriptors: []*domain.Descriptor{
-						{
-							Name:        "dockerhub_image.id",
-							Description: "The unique reference of this dockerhub image",
-							DataType:    "string",
-							DataSubtype: "trivy",
-							AssetTypes:  []string{"BINARY"},
-						},
-					},
-				},
-			},
-			SubAttributesDescriptors: nil,
-		},
-	}, nil
+	return &service.GetAssetDescriptorsResponse{}, nil
 }
 
 func (serviceImpl *TrivyScanner) ExecuteMaster(_ context.Context, _ *service.ExecuteRequest) (*service.ExecuteMasterResponse, error) {
@@ -214,10 +195,11 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile
 }
 
 func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
+	log.Debug().Msgf("Request received: %s", req)
 	assets, err := assetFetcher.FetchAssets(plugin.AssetFetchRequest{
 		AccountID:          req.Account.Uuid,
 		AssetType:          req.AssetType,
-		AssetSubTypes:      []string{"dockerhub_image"},
+		AssetSubTypes:      []string{"dockerhub_repo"},
 		Identifiers:        req.AssetIdentifiers,
 		ProfileIdentifiers: req.ProfileIdentifiers,
 	})
