@@ -118,8 +118,8 @@ type TrivyScanOutput struct {
 }
 
 type TrivyOutput struct {
-	ImageUrl        string            `json:"imageUrl"`
-	ImageScanOutput []TrivyScanOutput `json:"imageScanOutput"`
+	ImageUrl        string          `json:"imageUrl"`
+	ImageScanOutput TrivyScanOutput `json:"imageScanOutput"`
 }
 
 type TrivyRun struct {
@@ -226,10 +226,11 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 				var run TrivyRun
 				if err := json.Unmarshal(scanResponse, &run); err != nil {
 					log.Error().Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
+					log.Error().Msgf(err.Error())
 				} else {
 					if len(run.ScanOutput) > 0 {
 						if len(run.ScanOutput[0].ImageScanOutput) > 0 {
-							log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Results[0].Vulnerabilities))
+							log.Warn().Msgf("trivy vulnerability count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Results[0].Vulnerabilities))
 
 							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Results[0].Vulnerabilities, *asset, profile, checks)
 							log.Warn().Msgf("total so far : %d trivy checks", len(checks))
