@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	domain "github.com/deliveryblueprints/chplugin-go/v0.3.0/domainv0_3_0"
 	service "github.com/deliveryblueprints/chplugin-go/v0.3.0/servicev0_3_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
@@ -27,17 +28,17 @@ type AssetDTO struct {
 	SubAttributes []SubAttributesDTO `json:"subAttributes,omitEmpty"`
 }
 
-//TrivyScanner is a implementation of ManifiestService Grpc Service.
+// TrivyScanner is a implementation of ManifiestService Grpc Service.
 type TrivyScanner struct {
 	plugin.CHPluginService
 }
 
-//NewManifestServiceGrpcImpl returns the pointer to the implementation.
+// NewManifestServiceGrpcImpl returns the pointer to the implementation.
 func NewTrivyScanner() *TrivyScanner {
 	return &TrivyScanner{}
 }
 
-//GetManifest implementiation of gRPC service.
+// GetManifest implementiation of gRPC service.
 func (serviceImpl *TrivyScanner) GetManifest(ctx context.Context, in *service.GetManifestRequest) (*service.GetManifestResponse, error) {
 	return &service.GetManifestResponse{
 		Manifest: &domain.Manifest{
@@ -105,10 +106,15 @@ type TrivyVulnerabilities struct {
 	CVSS             CVSS   `json:"CVSS"`
 }
 
-type TrivyScanOutput struct {
+type TrivyResult struct {
 	Target          string                 `json:"Target"`
+	Class           string                 `json:"Class"`
 	Type            string                 `json:"Type"`
 	Vulnerabilities []TrivyVulnerabilities `json:"Vulnerabilities"`
+}
+
+type TrivyScanOutput struct {
+	Results []TrivyResult `json:"Results"`
 }
 
 type TrivyOutput struct {
@@ -223,9 +229,9 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 				} else {
 					if len(run.ScanOutput) > 0 {
 						if len(run.ScanOutput[0].ImageScanOutput) > 0 {
-							log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities))
+							log.Warn().Msgf("trivy vulneribility count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Results[0].Vulnerabilities))
 
-							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Vulnerabilities, *asset, profile, checks)
+							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Results[0].Vulnerabilities, *asset, profile, checks)
 							log.Warn().Msgf("total so far : %d trivy checks", len(checks))
 						}
 					}
