@@ -229,10 +229,10 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 					log.Error().Msgf(err.Error())
 				} else {
 					if len(run.ScanOutput) > 0 {
-						if len(run.ScanOutput[0].ImageScanOutput) > 0 {
-							log.Warn().Msgf("trivy vulnerability count : %d", len(run.ScanOutput[0].ImageScanOutput[0].Results[0].Vulnerabilities))
+						if len(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities) > 0 {
+							log.Warn().Msgf("trivy vulnerability count : %d", len(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities))
 
-							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput[0].Results[0].Vulnerabilities, *asset, profile, checks)
+							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities, *asset, profile, checks)
 							log.Warn().Msgf("total so far : %d trivy checks", len(checks))
 						}
 					}
