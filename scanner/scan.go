@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"compliance-hub-plugin-trivy/config"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"strings"
 
 	domain "github.com/deliveryblueprints/chplugin-go/v0.4.0/domainv0_4_0"
+	storage "github.com/deliveryblueprints/storage-go"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
@@ -71,12 +73,37 @@ func writeTarballTemp(data []byte) (*os.File, error) {
 	return f, err
 }
 
+func fetchBinaryData(binAttrib *domain.BinaryAttribute) ([]byte, error) {
+	// fetch the image tar in external storage
+	if binAttrib.SourceType == domain.SourceType_REMOTE {
+		storageSpec := storage.StorageSpec(binAttrib.SourceMetadata)
+		st, err := storage.NewStorage(context.Background(), storageSpec)
+		if err != nil {
+			return nil, err
+		}
+
+		binaryData, _, err := st.Fetch(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		return binaryData, nil
+	} else {
+		return binAttrib.Data, nil
+	}
+}
+
 func scanImage(a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) error {
 	// execute the trivy client against each of
 	var tarballData []byte
 	for _, binAttrib := range ap.BinAttributes {
 		if binAttrib.Version == "CH_MOST_RECENT" || binAttrib.Version == ap.Identifier {
-			tarballData = binAttrib.Data
+			// tarballData = binAttrib.Data
+			var err error
+			tarballData, err = fetchBinaryData(binAttrib)
+			if err != nil {
+				return err
+			}
 			break
 		}
 	}
