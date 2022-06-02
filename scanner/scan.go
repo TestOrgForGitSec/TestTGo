@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	domain "github.com/deliveryblueprints/chplugin-go/v0.3.0/domainv0_3_0"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
+
+	domain "github.com/deliveryblueprints/chplugin-go/v0.4.0/domainv0_4_0"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 )
 
 func Scan(scanType string, a *domain.MasterAsset, ap *domain.AssetProfile, response *[]byte) error {

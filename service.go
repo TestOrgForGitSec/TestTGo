@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	domain "github.com/deliveryblueprints/chplugin-go/v0.3.0/domainv0_3_0"
-	service "github.com/deliveryblueprints/chplugin-go/v0.3.0/servicev0_3_0"
+	domain "github.com/deliveryblueprints/chplugin-go/v0.4.0/domainv0_4_0"
+	service "github.com/deliveryblueprints/chplugin-go/v0.4.0/servicev0_4_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 )
