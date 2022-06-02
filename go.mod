@@ -9,7 +9,7 @@ require (
 	github.com/cncf/xds/go v0.0.0-20211130200136-a8f946100490 // indirect
 	github.com/deliveryblueprints/chplugin-go v1.14.0
 	github.com/deliveryblueprints/chplugin-service-go v1.14.3
-	github.com/deliveryblueprints/storage-go v0.0.0-20220602111226-31ae7e25bdf7
+	github.com/deliveryblueprints/storage-go v0.0.0-20220602150307-534f5ceebaa7
 	github.com/envoyproxy/go-control-plane v0.10.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.2 // indirect
 	github.com/google/uuid v1.2.0
