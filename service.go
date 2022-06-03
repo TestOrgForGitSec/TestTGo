@@ -64,9 +64,12 @@ func (serviceImpl *TrivyScanner) GetAssetDescriptors(context.Context, *service.G
 	return &service.GetAssetDescriptorsResponse{}, nil
 }
 
+/*
 func (serviceImpl *TrivyScanner) ExecuteMaster(_ context.Context, _ *service.ExecuteRequest) (*service.ExecuteMasterResponse, error) {
 	return &service.ExecuteMasterResponse{}, nil
 }
+
+*/
 
 func (serviceImpl *TrivyScanner) ExecuteDecorator(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteDecoratorResponse, error) {
 	return &service.ExecuteDecoratorResponse{}, nil
