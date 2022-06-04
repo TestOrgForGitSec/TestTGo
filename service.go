@@ -69,11 +69,13 @@ func (serviceImpl *TrivyScanner) ExecuteMaster(_ context.Context, _ *service.Exe
 	return &service.ExecuteMasterResponse{}, nil
 }
 
-*/
+
 
 func (serviceImpl *TrivyScanner) ExecuteDecorator(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteDecoratorResponse, error) {
 	return &service.ExecuteDecoratorResponse{}, nil
 }
+
+*/
 
 func mapToAssetAttributes(asset domain.Asset, data []byte) *domain.AssetAttributes {
 	return &domain.AssetAttributes{
