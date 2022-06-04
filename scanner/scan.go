@@ -97,6 +97,9 @@ func scanImage(a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) er
 	// execute the trivy client against each of
 	var tarballData []byte
 	for _, binAttrib := range ap.BinAttributes {
+
+		log.Debug().Msgf("Binary Attributes is : %v", binAttrib)
+		
 		if binAttrib.Version == "CH_MOST_RECENT" || binAttrib.Version == ap.Identifier {
 			// tarballData = binAttrib.Data
 			var err error
