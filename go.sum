@@ -160,6 +160,8 @@ github.com/deliveryblueprints/storage-go v0.0.0-20220604131312-7709f1d4e880 h1:b
 github.com/deliveryblueprints/storage-go v0.0.0-20220604131312-7709f1d4e880/go.mod h1:7ihFX2gOU6xBpo4n3FX2/ZLBBM/oG9h5L4dLW1qn3eE=
 github.com/deliveryblueprints/storage-go v0.0.0-20220605124902-7ba06ff280fb h1:wrkuh5OOyOAsyn2GnLdgCfxNp1khtNrTOxsHwH6WCnI=
 github.com/deliveryblueprints/storage-go v0.0.0-20220605124902-7ba06ff280fb/go.mod h1:o+czGq0V6VjJY8ff76JB8q3XzNspm9h1KUSYMPGcrps=
+github.com/deliveryblueprints/storage-go v0.0.0-20220605134824-51c3661a775e h1:ZzfguDkRHTnNqDeMdNuF/S9U8wk+ex4Px2w+sK6Ezeo=
+github.com/deliveryblueprints/storage-go v0.0.0-20220605134824-51c3661a775e/go.mod h1:o+czGq0V6VjJY8ff76JB8q3XzNspm9h1KUSYMPGcrps=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
