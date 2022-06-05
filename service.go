@@ -222,6 +222,13 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 
 	for _, asset := range assets {
 		for _, profile := range asset.Profiles {
+
+			if profile.BinAttributes != nil {
+				log.Debug().Msgf("binary asset in profile received is %v", *profile.BinAttributes[0])
+			} else {
+				log.Debug().Msgf("No binary asset in profile %s received for %s", profile.Identifier, asset.MasterAsset.Identifier)
+			}
+
 			// TODO profiles would be tags; for now, don't handle them- but they are there.
 			var scanResponse []byte
 			if err := scanner.Scan("Image", asset.MasterAsset, profile, &scanResponse); err != nil {
