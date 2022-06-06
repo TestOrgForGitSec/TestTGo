@@ -4,11 +4,12 @@ import (
 	"compliance-hub-plugin-trivy/config"
 	"compliance-hub-plugin-trivy/logging"
 	"fmt"
-	service "github.com/deliveryblueprints/chplugin-go/v0.3.0/servicev0_3_0"
+	"net"
+
+	service "github.com/deliveryblueprints/chplugin-go/v0.4.0/servicev0_4_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
-	"net"
 )
 
 func getNetListener(address string, port uint) net.Listener {

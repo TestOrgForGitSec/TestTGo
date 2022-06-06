@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	domain "github.com/deliveryblueprints/chplugin-go/v0.3.0/domainv0_3_0"
-	service "github.com/deliveryblueprints/chplugin-go/v0.3.0/servicev0_3_0"
+	domain "github.com/deliveryblueprints/chplugin-go/v0.4.0/domainv0_4_0"
+	service "github.com/deliveryblueprints/chplugin-go/v0.4.0/servicev0_4_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
 	"github.com/rs/zerolog/log"
 )
@@ -64,13 +64,18 @@ func (serviceImpl *TrivyScanner) GetAssetDescriptors(context.Context, *service.G
 	return &service.GetAssetDescriptorsResponse{}, nil
 }
 
+/*
 func (serviceImpl *TrivyScanner) ExecuteMaster(_ context.Context, _ *service.ExecuteRequest) (*service.ExecuteMasterResponse, error) {
 	return &service.ExecuteMasterResponse{}, nil
 }
 
+
+
 func (serviceImpl *TrivyScanner) ExecuteDecorator(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteDecoratorResponse, error) {
 	return &service.ExecuteDecoratorResponse{}, nil
 }
+
+*/
 
 func mapToAssetAttributes(asset domain.Asset, data []byte) *domain.AssetAttributes {
 	return &domain.AssetAttributes{
@@ -217,6 +222,7 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 
 	for _, asset := range assets {
 		for _, profile := range asset.Profiles {
+
 			// TODO profiles would be tags; for now, don't handle them- but they are there.
 			var scanResponse []byte
 			if err := scanner.Scan("Image", asset.MasterAsset, profile, &scanResponse); err != nil {
