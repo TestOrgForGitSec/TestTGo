@@ -210,7 +210,7 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 	assets, err := assetFetcher.FetchAssets(plugin.AssetFetchRequest{
 		AccountID:          req.Account.Uuid,
 		AssetType:          req.AssetType,
-		AssetSubTypes:      []string{"dockerhub_repo"},
+		AssetSubTypes:      req.AssetSubTypes,
 		Identifiers:        req.AssetIdentifiers,
 		ProfileIdentifiers: req.ProfileIdentifiers,
 	})
