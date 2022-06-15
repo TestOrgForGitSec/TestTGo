@@ -11,42 +11,42 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/deliveryblueprints/chlog-go/log"
 	domain "github.com/deliveryblueprints/chplugin-go/v0.4.0/domainv0_4_0"
 	storage "github.com/deliveryblueprints/storage-go"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 )
 
-func Scan(scanType string, a *domain.MasterAsset, ap *domain.AssetProfile, response *[]byte) error {
+func Scan(ctx context.Context, scanType string, a *domain.MasterAsset, ap *domain.AssetProfile, response *[]byte) error {
 
 	scanRunUUID := uuid.NewString()
-
-	log.Info().Msgf("Starting Scan run %s, asset: %s, profile: %s", scanRunUUID, a.Identifier, ap.Identifier)
+	requestId := fetchRequestId(ctx)
+	log.Info(requestId).Msgf("Starting Scan run %s, asset: %s, profile: %s", scanRunUUID, a.Identifier, ap.Identifier)
 
 	if scanType == EmptyString || response == nil || (scanType == "Registry" && a.Identifier == EmptyString) {
-		log.Info().Msgf("Incorrect Scan params : scanType=%s, scanUrl=%s, or response byte array was nil.", scanType, a.Identifier)
+		log.Info(requestId).Msgf("Incorrect Scan params : scanType=%s, scanUrl=%s, or response byte array was nil.", scanType, a.Identifier)
 		return errors.New("invalid scan parameters")
 	}
 
 	// setup image cache & output directories
 	workDir := WorkDirBase + scanRunUUID
 	outDir := workDir + OutputDir
-	if err := mkDir(workDir, outDir); err != nil {
+	if err := mkDir(ctx, workDir, outDir); err != nil {
 		return err
 	}
 
 	switch scanType {
 	case "Image":
-		log.Info().Msgf("Scanning Image %s", a.Identifier)
-		if err := scanImage(a, ap, outDir); err != nil {
-			log.Error().Err(err).Msg("Scan Image Failed")
+		log.Info(requestId).Msgf("Scanning Image %s", a.Identifier)
+		if err := scanImage(ctx, a, ap, outDir); err != nil {
+			log.Error(requestId).Err(err).Msg("Scan Image Failed")
 			return err
 		}
 
 	case "Registry":
-		log.Info().Msgf("Scanning Image Registry %s", a.Identifier)
+		log.Info(requestId).Msgf("Scanning Image Registry %s", a.Identifier)
 		if err := scanRegistry(a.Identifier); err != nil {
-			log.Error().Err(err).Msg("Scan Registry Failed")
+			log.Error(requestId).Err(err).Msg("Scan Registry Failed")
 			return err
 		}
 	default:
@@ -56,7 +56,7 @@ func Scan(scanType string, a *domain.MasterAsset, ap *domain.AssetProfile, respo
 
 	// create the output response
 
-	if err := createResponse(scanRunUUID, outDir, response); err != nil {
+	if err := createResponse(ctx, scanRunUUID, outDir, response); err != nil {
 		return err
 	}
 
@@ -93,7 +93,10 @@ func fetchBinaryData(binAttrib *domain.BinaryAttribute) ([]byte, error) {
 	}
 }
 
-func scanImage(a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) error {
+func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) error {
+
+	requestId := fetchRequestId(ctx)
+
 	// execute the trivy client against each of
 	var tarballData []byte
 	for _, binAttrib := range ap.BinAttributes {
@@ -125,30 +128,31 @@ func scanImage(a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) er
 
 	scanLog, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Debug().Msg(string(scanLog))
-		log.Error().Err(err).Msgf("Could not execute command %s", cmd.String())
+		log.Debug(requestId).Msg(string(scanLog))
+		log.Error(requestId).Err(err).Msgf("Could not execute command %s", cmd.String())
 		return err
 	}
 
 	// write the log file from the scan
-	log.Debug().Msg(string(scanLog))
+	log.Debug(requestId).Msg(string(scanLog))
 	logFileName := outDir + Slash + imageName + DoubleUnderScore + LogFileName
 	if err := ioutil.WriteFile(logFileName, scanLog, FilePerm); err != nil {
-		log.Error().Err(err).Msgf("Could not write file %s", logFileName)
+		log.Error(requestId).Err(err).Msgf("Could not write file %s", logFileName)
 		return err
 	}
 
 	return err
 }
 
-func mkDir(workDir, outDir string) error {
+func mkDir(ctx context.Context, workDir, outDir string) error {
+	requestId := fetchRequestId(ctx)
 	if err := os.Mkdir(workDir, FilePerm); err != nil {
-		log.Error().Msgf("Could not create directory %s", workDir)
+		log.Error(requestId).Msgf("Could not create directory %s", workDir)
 		return err
 	}
 
 	if err := os.Mkdir(outDir, FilePerm); err != nil {
-		log.Error().Msgf("Could not create directory %s", workDir)
+		log.Error(requestId).Msgf("Could not create directory %s", workDir)
 		return err
 	}
 	return nil
@@ -158,7 +162,10 @@ func scanRegistry(registryUrl string) error {
 	return nil
 }
 
-func createResponse(scanRunUUID, outDir string, response *[]byte) error {
+func createResponse(ctx context.Context, scanRunUUID, outDir string, response *[]byte) error {
+
+	requestId := fetchRequestId(ctx)
+
 	var (
 		scanResp scanResponse
 		scanRes  imageResult
@@ -170,7 +177,7 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 	// get the output files
 	files, err := ioutil.ReadDir(outDir)
 	if err != nil {
-		log.Error().Err(err).Msgf("Could not read directory %s", outDir)
+		log.Error(requestId).Err(err).Msgf("Could not read directory %s", outDir)
 		return err
 	}
 
@@ -185,7 +192,7 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 			scanRes = imageResult{}
 			content, err := ioutil.ReadFile(filePath)
 			if err != nil {
-				log.Error().Err(err).Msgf("Could not read file %s", fileName)
+				log.Error(requestId).Err(err).Msgf("Could not read file %s", fileName)
 				return err
 			}
 
@@ -199,7 +206,7 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 			scanLog = imageLog{}
 			content, err := ioutil.ReadFile(filePath)
 			if err != nil {
-				log.Error().Err(err).Msgf("Could not read file %s", fileName)
+				log.Error(requestId).Err(err).Msgf("Could not read file %s", fileName)
 				return err
 			}
 
@@ -213,8 +220,21 @@ func createResponse(scanRunUUID, outDir string, response *[]byte) error {
 	*response, err = json.Marshal(scanResp)
 
 	if err != nil {
-		log.Error().Err(err).Msgf("Could not marshal response - %s", err)
+		log.Error(requestId).Err(err).Msgf("Could not marshal response - %s", err)
 	}
 
 	return nil
+}
+
+func fetchRequestId(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	requestId, ok := ctx.Value("requestId").(string)
+	if !ok {
+		log.Error().Msg("Unable to get request id. Cannot determine sublogger for request id.")
+		requestId = ""
+	}
+	return requestId
+
 }

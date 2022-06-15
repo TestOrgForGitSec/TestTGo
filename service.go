@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/deliveryblueprints/chlog-go/log"
 	domain "github.com/deliveryblueprints/chplugin-go/v0.4.0/domainv0_4_0"
 	service "github.com/deliveryblueprints/chplugin-go/v0.4.0/servicev0_4_0"
 	"github.com/deliveryblueprints/chplugin-service-go/plugin"
-	"github.com/rs/zerolog/log"
+	"github.com/google/uuid"
 )
 
 type SubAttributesDTO struct {
@@ -139,8 +140,11 @@ type vulnerabilityAssetCheck struct {
 	assetResult *domain.AssetResult
 }
 
-func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile *domain.AssetProfile, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
-
+func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset domain.Asset, profile *domain.AssetProfile, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
+	requestId, okay := ctx.Value("requestId").(string)
+	if !okay {
+		log.Error().Msg("Unable to get request id. Cannot determine sublogger for request id.")
+	}
 	assetChecks := map[string]vulnerabilityAssetCheck{}
 	var assetCheck vulnerabilityAssetCheck
 	var ok bool
@@ -165,7 +169,7 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile
 			assetCheck = assetChecks[vulnerability.VulnerabilityID]
 		}
 
-		log.Trace().Msgf("Adding fail detail for %s:%s.%s)", vulnerability.VulnerabilityID, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
+		log.Info(requestId).Msgf("Adding fail detail for %s:%s.%s)", vulnerability.VulnerabilityID, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
 
 		var score float32
 		if vulnerability.CVSS.Nvd.V3Score != 0 {
@@ -183,7 +187,7 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile
 	for vulnerabilityId, aCheck := range assetChecks {
 
 		if check, ok = checks[vulnerabilityId]; !ok {
-			log.Trace().Msgf("Adding new check %s", vulnerabilityId)
+			log.Info(requestId).Msgf("Adding new check %s", vulnerabilityId)
 			checks[vulnerabilityId] = &domain.Evaluation{
 				Standard:      "Trivy Scan",
 				Code:          vulnerabilityId,
@@ -200,13 +204,15 @@ func mapToEvaluation(results []TrivyVulnerabilities, asset domain.Asset, profile
 		check.Failures = append(check.Failures, aCheck.assetResult)
 	}
 
-	log.Warn().Msgf("Appended %d failed checks for asset %s", len(assetChecks), asset.Uuid)
+	log.Warn(requestId).Msgf("Appended %d failed checks for asset %s", len(assetChecks), asset.Uuid)
 
 	return checks
 }
 
-func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
+func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
+
 	log.Debug().Msgf("Request received: %s", req)
+
 	assets, err := assetFetcher.FetchAssets(plugin.AssetFetchRequest{
 		AccountID:          req.Account.Uuid,
 		AssetType:          req.AssetType,
@@ -218,6 +224,24 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 		return nil, err
 	}
 
+	trackingInfo := make(map[string]string)
+	err = json.Unmarshal(req.TrackingInfo, &trackingInfo)
+	if err != nil {
+		log.Warn().Msg("Unable to unmarshal trackingInfo.")
+	}
+
+	requestId := trackingInfo["ch-request-id"]
+
+	if requestId == "" {
+		requestId = uuid.New().String()
+		trackingInfo["ch-request-id"] = requestId
+	}
+
+	log.CreateSubLogger(requestId, "", trackingInfo)
+	defer log.DestroySubLogger(requestId)
+
+	ctx = context.WithValue(ctx, "requestId", requestId)
+	ctx = context.WithValue(ctx, "trackingInfo", trackingInfo)
 	checks := map[string]*domain.Evaluation{}
 
 	for _, asset := range assets {
@@ -225,21 +249,21 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 
 			// TODO profiles would be tags; for now, don't handle them- but they are there.
 			var scanResponse []byte
-			if err := scanner.Scan("Image", asset.MasterAsset, profile, &scanResponse); err != nil {
-				log.Info().Msgf("Could not scan %s.%s.%s - ignoring (%s)", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier, err)
+			if err := scanner.Scan(ctx, "Image", asset.MasterAsset, profile, &scanResponse); err != nil {
+				log.Info(requestId).Msgf("Could not scan %s.%s.%s - ignoring (%s)", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier, err)
 			} else {
-				log.Info().Msgf("payload size %d", len(scanResponse))
+				log.Info(requestId).Msgf("payload size %d", len(scanResponse))
 				var run TrivyRun
 				if err := json.Unmarshal(scanResponse, &run); err != nil {
-					log.Error().Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
-					log.Error().Msgf(err.Error())
+					log.Error(requestId).Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
+					log.Error(requestId).Msgf(err.Error())
 				} else {
 					if len(run.ScanOutput) > 0 {
 						if len(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities) > 0 {
-							log.Warn().Msgf("trivy vulnerability count : %d", len(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities))
+							log.Warn(requestId).Msgf("trivy vulnerability count : %d", len(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities))
 
-							checks = mapToEvaluation(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities, *asset, profile, checks)
-							log.Warn().Msgf("total so far : %d trivy checks", len(checks))
+							checks = mapToEvaluation(ctx, run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities, *asset, profile, checks)
+							log.Warn(requestId).Msgf("total so far : %d trivy checks", len(checks))
 						}
 					}
 				}
@@ -247,13 +271,13 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(_ context.Context, req *service
 		}
 	}
 
-	log.Warn().Msgf("Found total %d failed checks", len(checks))
+	log.Warn(requestId).Msgf("Found total %d failed checks", len(checks))
 
 	// convert map and return
 	checkList := make([]*domain.Evaluation, len(checks))
 	i := 0
 	for _, check := range checks {
-		log.Trace().Msgf("Adding check from map, fails %d", len(check.Failures))
+		log.Info(requestId).Msgf("Adding check from map, fails %d", len(check.Failures))
 		checkList[i] = check
 		i++
 	}
