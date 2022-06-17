@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -11,7 +12,8 @@ func TestCreateResponse(t *testing.T) {
 		TestDataDir = "./testdata"
 	)
 	var resp []byte
-	err := createResponse(TestUUID, TestDataDir, &resp)
+	ctx := context.Background()
+	err := createResponse(ctx, TestUUID, TestDataDir, &resp)
 
 	if err != nil {
 		fmt.Println("did not work")

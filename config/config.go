@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 var Config *viper.Viper
@@ -23,4 +24,7 @@ func InitConfig() {
 	Config.SetDefault("log.colour", false)
 	Config.SetDefault("log.callerinfo", false)
 	Config.SetDefault("log.level", "debug")
+	Config.SetDefault("db.log.level", "debug")
+	Config.SetDefault("log.useconsolewriter", false)
+	Config.SetDefault("log.unixtime", false)
 }
