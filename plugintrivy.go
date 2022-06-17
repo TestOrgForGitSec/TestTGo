@@ -34,7 +34,7 @@ func main() {
 	gRPCServer := grpc.NewServer(grpc.MaxRecvMsgSize(config.Config.GetInt("grpc.maxrecvsize")))
 	chPluginServiceImpl := plugin.CHPluginServiceBuilder(NewTrivyScanner())
 	service.RegisterCHPluginServiceServer(gRPCServer, chPluginServiceImpl)
-	log.Info().Msgf("Started: %s", time.Now().Format(time.RFC3339))
+	log.Info().Msgf("Starting: %s", time.Now().Format(time.RFC3339))
 	// start the server
 	if err := gRPCServer.Serve(netListener); err != nil {
 		log.Fatal().Msgf("failed to serve: %s", err)
