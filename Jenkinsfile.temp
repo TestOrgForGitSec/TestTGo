@@ -1,0 +1,131 @@
+#!/usr/bin/env groovy
+/*
+ * Build Go Modules
+ */
+
+  pipeline {
+      agent any
+
+      environment {
+        MODULE = "plugin-trivy"
+        MODULE_ENV_NAME = 'dev'
+        ECR_ENV_NAME = 'dev'
+        ECR_REGION = 'us-east-1'
+        PROJECT = 'cbc'
+        VERSION = "cve-fix"
+        GO_PROXY = 'http://goproxy.sbx.cbc.beescloud.com'
+        GO_111MODULE = 'on'
+      }
+
+      options {
+          disableConcurrentBuilds()
+          skipStagesAfterUnstable()
+          ansiColor('xterm')
+      }
+
+      stages {
+        stage('Start') {
+          steps {
+            cleanWs()
+            script {
+              currentBuild.description = "${env.GIT_BRANCH} ${env.GIT_COMMIT}"
+            }
+          }
+        }
+
+        stage('Checkout') {
+          steps {
+            deleteDir()
+            checkout scm
+          }
+        }
+
+        stage('Pre-build') {
+          steps {
+            script {
+              withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "aws_${ECR_ENV_NAME}_creds"]]) {
+                ACCOUNT = sh (script: 'aws sts get-caller-identity --query Account --output text', returnStdout: true).trim()
+                ECR_REPO_URI = sh (script: "echo ${ACCOUNT}.dkr.ecr.${env.ECR_REGION}.amazonaws.com/${env.PROJECT}/${env.MODULE}", returnStdout: true).trim()
+                ECR_REPO_LOGIN = sh (script: "aws ecr get-login-password --region ${env.ECR_REGION} | docker login --username AWS --password-stdin $ECR_REPO_URI || true", returnStdout: true).trim()
+                GIT_SHORT_HASH = env.GIT_COMMIT.take(7)
+                TARGET = sh (script: "echo ${ECR_REPO_URI}:${VERSION}", returnStdout: true).trim()
+                TARGET_GIT_SHORT_HASH = sh (script: "echo ${ECR_REPO_URI}:${GIT_SHORT_HASH}", returnStdout: true).trim()
+                TARGET_MIGRATE = sh (script: "echo ${ECR_REPO_URI}-migrate:${VERSION}", returnStdout: true).trim()
+                TARGET_MIGRATE_GIT_SHORT_HASH = sh (script: "echo ${TARGET_MIGRATE}-${GIT_SHORT_HASH}", returnStdout: true).trim()
+              }
+            }
+          }
+        }
+
+        stage('Build') {
+          steps {
+            withCredentials([[
+                      $class: 'AmazonWebServicesCredentialsBinding',
+                      credentialsId: "aws_${ECR_ENV_NAME}_creds"],
+
+                      [$class: 'UsernamePasswordMultiBinding',
+                      credentialsId: 'github-cbc-infra-token',
+                      usernameVariable: 'GITHUB_USER',
+                      passwordVariable: 'GITHUB_TOKEN']]) {
+              //sh "docker build -t $TARGET --build-arg USER =${GITHUB_USER} --build-arg TOKEN=${GITHUB_TOKEN} -f Dockerfile.cloudbees ."
+              sh "docker build -t $TARGET --build-arg USER=${GITHUB_USER} --build-arg TOKEN=${GITHUB_TOKEN} ."
+                      }
+          }
+        }
+
+//         stage('Push') {
+//           steps {
+//             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "aws_${ECR_ENV_NAME}_creds"]]) {
+//               script {
+//                 sh "docker tag $TARGET $TARGET_GIT_SHORT_HASH"
+//                 sh "docker push $TARGET"
+//                 sh "docker push $TARGET_GIT_SHORT_HASH"
+//               }
+//             }
+//           }
+//         }
+
+//         stage('DB-Migration') {
+//           when {
+//             expression {
+//               return pipelineParams.dbMigration == 'true'
+//             }
+//           }
+//           steps {
+//             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "aws_${ECR_ENV_NAME}_creds"]]) {
+//               script {
+//                 sh "docker build -t $TARGET_MIGRATE database/migrations/."
+//                 sh "docker tag $TARGET_MIGRATE $TARGET_MIGRATE_GIT_SHORT_HASH"
+//                 sh "docker push $TARGET_MIGRATE"
+//                 sh "docker push $TARGET_MIGRATE_GIT_SHORT_HASH"
+//               }
+//             }
+//           }
+//         }
+
+//         stage('Deploy') {
+//           steps {
+//             build job: 'BuildJobs/compliance-hub-module-deploy', parameters: [
+//               string(name: 'PROJECT',  value: "${PROJECT}"),
+//               string(name: 'ENV_NAME',  value: "${MODULE_ENV_NAME}"),
+//               string(name: 'MODULE',  value: "${MODULE}")
+//               ], wait: true
+//           }
+//         }
+
+//         stage('DB-Migration-Apply') {
+//           when {
+//             expression {
+//               return pipelineParams.dbMigration == 'true'
+//             }
+//           }
+//           steps {
+//             build job: 'BuildJobs/compliance-hub-module-db-migration', parameters: [
+//               string(name: 'PROJECT',  value: "${PROJECT}"),
+//               string(name: 'ENV_NAME',  value: "${MODULE_ENV_NAME}"),
+//               string(name: 'MODULE',  value: "${MODULE}")
+//               ], wait: true
+//           }
+//         }
+      }
+  }
