@@ -3,7 +3,6 @@ ADD . /src/compliance-hub-plugin-trivy
 WORKDIR /src/compliance-hub-plugin-trivy
 ARG USER
 ARG TOKEN
-RUN apk --no-cache add git
 RUN apk update
 RUN apk add --no-cache pcre2-dev
 RUN go env -w GOPRIVATE=github.com/deliveryblueprints/*
