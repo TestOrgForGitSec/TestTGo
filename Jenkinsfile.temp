@@ -73,17 +73,17 @@
           }
         }
 
-//         stage('Push') {
-//           steps {
-//             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "aws_${ECR_ENV_NAME}_creds"]]) {
-//               script {
-//                 sh "docker tag $TARGET $TARGET_GIT_SHORT_HASH"
-//                 sh "docker push $TARGET"
-//                 sh "docker push $TARGET_GIT_SHORT_HASH"
-//               }
-//             }
-//           }
-//         }
+        stage('Push') {
+          steps {
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "aws_${ECR_ENV_NAME}_creds"]]) {
+              script {
+                sh "docker tag $TARGET $TARGET_GIT_SHORT_HASH"
+                sh "docker push $TARGET"
+                sh "docker push $TARGET_GIT_SHORT_HASH"
+              }
+            }
+          }
+        }
 
 //         stage('DB-Migration') {
 //           when {
