@@ -136,8 +136,9 @@ github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfc
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/deliveryblueprints/chlog-go v0.1.2-0.20220604091410-e17e6413d6be h1:D6bxNbD3mseK6HFJ9RJxUf3C23tUakHRIAo5MNH64sU=
 github.com/deliveryblueprints/chlog-go v0.1.2-0.20220604091410-e17e6413d6be/go.mod h1:AMaCNNwn+sR1Wz4/SlDsorUm+ZUYGhyQk9E/G0vG9V8=
+github.com/deliveryblueprints/chlog-go v0.1.2 h1:wjHgXdwN9O9yC6ZayXguClXiAf1bWB7CmDgzy9wft/w=
+github.com/deliveryblueprints/chlog-go v0.1.2/go.mod h1:AMaCNNwn+sR1Wz4/SlDsorUm+ZUYGhyQk9E/G0vG9V8=
 github.com/deliveryblueprints/chplugin-go v1.14.0 h1:2j8bg8R3aLdc7fXLwhGg7qPGDv7j5O8YkUxh50ffV14=
 github.com/deliveryblueprints/chplugin-go v1.14.0/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-service-go v1.14.3 h1:cEWSBzz7d7Eq9NPqsutMvFib7XdGIYyRzRicjS5Xvuo=
