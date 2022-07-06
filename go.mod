@@ -3,7 +3,7 @@ module compliance-hub-plugin-trivy
 go 1.14
 
 require (
-	github.com/deliveryblueprints/chlog-go v0.1.2-0.20220604091410-e17e6413d6be
+	github.com/deliveryblueprints/chlog-go v0.1.2
 	github.com/deliveryblueprints/chplugin-go v1.14.0
 	github.com/deliveryblueprints/chplugin-service-go v1.14.3
 	github.com/deliveryblueprints/storage-go v0.0.4
