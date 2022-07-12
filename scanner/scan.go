@@ -73,16 +73,16 @@ func writeTarballTemp(data []byte) (*os.File, error) {
 	return f, err
 }
 
-func fetchBinaryData(binAttrib *domain.BinaryAttribute) ([]byte, error) {
+func fetchBinaryData(binAttrib *domain.BinaryAttribute, ctx context.Context) ([]byte, error) {
 	// fetch the image tar in external storage
 	if binAttrib.SourceType == domain.SourceType_REMOTE {
 		storageSpec := storage.StorageSpec(binAttrib.SourceMetadata)
-		st, err := storage.NewStorage(context.Background(), storageSpec)
+		st, err := storage.NewStorage(ctx, storageSpec)
 		if err != nil {
 			return nil, err
 		}
 
-		binaryData, _, err := st.Fetch(context.Background())
+		binaryData, _, err := st.Fetch(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfi
 		if binAttrib.Version == "CH_MOST_RECENT" || binAttrib.Version == ap.Identifier {
 			// tarballData = binAttrib.Data
 			var err error
-			tarballData, err = fetchBinaryData(binAttrib)
+			tarballData, err = fetchBinaryData(binAttrib, ctx)
 			if err != nil {
 				return err
 			}
