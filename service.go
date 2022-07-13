@@ -258,7 +258,7 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *servi
 					log.Error(requestId).Msgf("Error unmarshalling trivy response for asset %s.%s.%s - ignoring", asset.MasterAsset.Type, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
 					log.Error(requestId).Msgf(err.Error())
 				} else {
-					if len(run.ScanOutput) > 0 {
+					if len(run.ScanOutput) > 0 && len(run.ScanOutput[0].ImageScanOutput.Results) > 0 {
 						if len(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities) > 0 {
 							log.Warn(requestId).Msgf("trivy vulnerability count : %d", len(run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities))
 
