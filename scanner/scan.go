@@ -100,6 +100,8 @@ func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfi
 	// execute the trivy client against each of
 	var tarballData []byte
 	for _, binAttrib := range ap.BinAttributes {
+		log.Debug(requestId).Msgf("BinAttrib values are : Name : %s, Type : %s, Version: %s, SourceType : %d, SourceMetadata : %s", binAttrib.Name, binAttrib.Type, binAttrib.Version, binAttrib.SourceType, binAttrib.SourceMetadata)
+		log.Debug(requestId).Msgf("ApIdentifier is %s", ap.Identifier)
 
 		if binAttrib.Version == "CH_MOST_RECENT" || binAttrib.Version == ap.Identifier {
 			// tarballData = binAttrib.Data
