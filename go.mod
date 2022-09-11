@@ -6,7 +6,7 @@ require (
 	github.com/deliveryblueprints/chlog-go v0.1.2
 	github.com/deliveryblueprints/chplugin-go v1.14.0
 	github.com/deliveryblueprints/chplugin-service-go v1.14.3
-	github.com/deliveryblueprints/storage-go v0.0.8
+	github.com/deliveryblueprints/storage-go v0.0.9
 	github.com/google/uuid v1.2.0
 	github.com/spf13/viper v1.11.0
 	google.golang.org/grpc v1.45.0

@@ -143,10 +143,8 @@ github.com/deliveryblueprints/chplugin-go v1.14.0 h1:2j8bg8R3aLdc7fXLwhGg7qPGDv7
 github.com/deliveryblueprints/chplugin-go v1.14.0/go.mod h1:vxZLni7rQLqRqoDvkWVxiKnOF8n41T2+Hz1O3VDcx2w=
 github.com/deliveryblueprints/chplugin-service-go v1.14.3 h1:cEWSBzz7d7Eq9NPqsutMvFib7XdGIYyRzRicjS5Xvuo=
 github.com/deliveryblueprints/chplugin-service-go v1.14.3/go.mod h1:qWdG7fEqK6g75Vj9+coutKXh6MbNuw9+jIdVUHKyhmg=
-github.com/deliveryblueprints/storage-go v0.0.5 h1:IDtOinY0CBrGst7jNDMf/Jm3vcc/h8AD9BEGyqRZKmM=
-github.com/deliveryblueprints/storage-go v0.0.5/go.mod h1:BSbxqN0iqNl38YkHIGr12OM/8GZFzNuxO7BlCh8ksN8=
-github.com/deliveryblueprints/storage-go v0.0.8 h1:MTb4f+tGxD3S/uZZq3rPYgh3s22GClGf2sAqsHF1MU0=
-github.com/deliveryblueprints/storage-go v0.0.8/go.mod h1:BSbxqN0iqNl38YkHIGr12OM/8GZFzNuxO7BlCh8ksN8=
+github.com/deliveryblueprints/storage-go v0.0.9 h1:bEOpPuv8booHAkagPANQT8rDQwaT9Qe1LthsEauN474=
+github.com/deliveryblueprints/storage-go v0.0.9/go.mod h1:BSbxqN0iqNl38YkHIGr12OM/8GZFzNuxO7BlCh8ksN8=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
