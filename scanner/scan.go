@@ -126,6 +126,8 @@ func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfi
 	imageName := strings.ReplaceAll(a.Identifier, Slash, UnderScore)
 	imageName = strings.ReplaceAll(imageName, Colon, UnderScore)
 	outputFile := outDir + Slash + imageName + DoubleUnderScore + OutputFileName
+	defer os.Remove(outputFile)
+
 	cmd := exec.Command(App, "-d", RunAsClient, SpecifyFormat, OutputFormat, SpecifyInputFile, tarballFile.Name(), SpecifyOutput, outputFile, SpecifyRemote, config.Config.GetString("trivy.remote"))
 
 	scanLog, err := cmd.CombinedOutput()
@@ -135,13 +137,7 @@ func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfi
 		return err
 	}
 
-	// write the log file from the scan
-	log.Debug(requestId).Msg(string(scanLog))
-	logFileName := outDir + Slash + imageName + DoubleUnderScore + LogFileName
-	if err := ioutil.WriteFile(logFileName, scanLog, FilePerm); err != nil {
-		log.Error(requestId).Err(err).Msgf("Could not write file %s", logFileName)
-		return err
-	}
+	log.Debug(requestId).Msg(string(scanLog)) // write the scan log if we need to diagnose stuff
 
 	return err
 }
