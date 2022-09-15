@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/deliveryblueprints/chlog-go/log"
@@ -127,6 +128,7 @@ func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfi
 	imageName = strings.ReplaceAll(imageName, Colon, UnderScore)
 	outputFile := outDir + Slash + imageName + DoubleUnderScore + OutputFileName
 	defer os.Remove(outputFile)
+	defer os.Remove(filepath.Dir(outputFile))
 
 	cmd := exec.Command(App, "-d", RunAsClient, SpecifyFormat, OutputFormat, SpecifyInputFile, tarballFile.Name(), SpecifyOutput, outputFile, SpecifyRemote, config.Config.GetString("trivy.remote"))
 
