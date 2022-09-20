@@ -15,13 +15,16 @@ const (
 	FilePerm         = 0755
 
 	// trivy client command constants
-	App              = "trivy"
-	RunAsClient      = "client"
-	SpecifyFormat    = "-f"
-	OutputFormat     = "json"
-	SpecifyOutput    = "-o"
-	SpecifyInputFile = "-i"
-	SpecifyRemote    = "--remote"
+	App                 = "trivy"
+	RunAsClient         = "client"
+	RunAsImage          = "image"
+	RunAsDebug          = "--debug"
+	SpecifyOutputFormat = "--format"
+	OutputFormat        = "json"
+	SpecifyOutput       = "--output"
+	SpecifyInputFile    = "--input"
+	SpecifyRemote       = "--remote"
+	SpecifyServer       = "--server"
 	//RemoteServer  = "http://trivy-server:8081"
 )
 
