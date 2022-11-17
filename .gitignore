@@ -1,7 +1,10 @@
 .idea
+.vscode
+.dccache
 
 plugintrivy
 plugintrivy.exe
+compliance-hub-plugin-trivy
 
 # Binaries for programs and plugins
 *.exe

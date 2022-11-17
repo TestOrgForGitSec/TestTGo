@@ -12,10 +12,10 @@ RUN go test -short ./... \
   && govulncheck ./... \
   && go build -o /tmp/myapp 
 
-FROM aquasec/trivy:0.32.1
+FROM aquasec/trivy:0.34.0
 WORKDIR /app
 RUN apk --no-cache add ca-certificates \
-  && adduser -D nonpriv # create user and group
+  && adduser -DHSu 1001 nonpriv
 USER nonpriv
 COPY --from=GOLANG /tmp/myapp /app/myapp
 ENTRYPOINT ["/app/myapp"]
