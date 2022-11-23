@@ -3,9 +3,9 @@ module compliance-hub-plugin-trivy
 go 1.19
 
 require (
-	github.com/deliveryblueprints/chlog-go v0.1.2
+	github.com/deliveryblueprints/chlog-go v0.4.6
 	github.com/deliveryblueprints/chplugin-go v1.14.0
-	github.com/deliveryblueprints/chplugin-service-go v1.14.3
+	github.com/deliveryblueprints/chplugin-service-go v1.14.6
 	github.com/deliveryblueprints/storage-go v0.0.9
 	github.com/google/uuid v1.2.0
 	github.com/spf13/viper v1.11.0
@@ -33,6 +33,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.7 // indirect
 	github.com/aws/smithy-go v1.11.3 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/gammazero/deque v0.2.0 // indirect
+	github.com/gammazero/workerpool v1.1.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

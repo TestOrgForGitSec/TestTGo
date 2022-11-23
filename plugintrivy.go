@@ -32,7 +32,11 @@ func main() {
 
 	netListener := getNetListener(config.Config.GetString("server.address"), config.Config.GetUint("server.port"))
 	gRPCServer := grpc.NewServer(grpc.MaxRecvMsgSize(config.Config.GetInt("grpc.maxrecvsize")))
-	chPluginServiceImpl := plugin.CHPluginServiceBuilder(NewTrivyScanner())
+	chPluginServiceImpl := plugin.CHPluginServiceBuilder(
+		NewTrivyScanner(),
+		config.Config.GetInt("service.workerpool.size"),
+		int64(config.Config.GetInt("heartbeat.timer")),
+	)
 	service.RegisterCHPluginServiceServer(gRPCServer, chPluginServiceImpl)
 	log.Info().Msgf("Starting: %s", time.Now().Format(time.RFC3339))
 	// start the server

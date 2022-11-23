@@ -4,6 +4,7 @@ import (
 	"compliance-hub-plugin-trivy/scanner"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/deliveryblueprints/chlog-go/log"
@@ -31,7 +32,7 @@ type AssetDTO struct {
 
 // TrivyScanner is a implementation of ManifiestService Grpc Service.
 type TrivyScanner struct {
-	plugin.CHPluginService
+	service.CHPluginServiceServer
 }
 
 // NewManifestServiceGrpcImpl returns the pointer to the implementation.
@@ -209,7 +210,7 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 	return checks
 }
 
-func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher) (*service.ExecuteAnalyserResponse, error) {
+func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher, _ service.CHPluginService_AnalyserServer) (*service.ExecuteAnalyserResponse, error) {
 
 	log.Debug().Msgf("Request received: %s", req)
 
@@ -285,4 +286,20 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *servi
 	return &service.ExecuteAnalyserResponse{
 		Checks: checkList,
 	}, nil
+}
+
+func (serviceImpl *TrivyScanner) ExecuteMaster(context.Context, *service.ExecuteRequest, service.CHPluginService_MasterServer) ([]*domain.MasterResponse, error) {
+	return nil, errors.New("does not support this role")
+}
+
+func (serviceImpl *TrivyScanner) ExecuteDecorator(context.Context, *service.ExecuteRequest, plugin.AssetFetcher, service.CHPluginService_DecoratorServer) (*service.ExecuteDecoratorResponse, error) {
+	return nil, errors.New("does not support this role")
+}
+
+func (serviceImpl *TrivyScanner) ExecuteAggregator(context.Context, *service.ExecuteRequest, plugin.AssetFetcher, service.CHPluginService_AggregatorServer) (*service.ExecuteAggregatorResponse, error) {
+	return nil, errors.New("does not support this role")
+}
+
+func (serviceImpl *TrivyScanner) ExecuteAssessor(context.Context, *service.ExecuteRequest, plugin.AssetFetcher, service.CHPluginService_AssessorServer) (*service.ExecuteAssessorResponse, error) {
+	return nil, errors.New("does not support this role")
 }
