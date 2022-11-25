@@ -9,6 +9,7 @@ require (
 	github.com/deliveryblueprints/storage-go v0.0.9
 	github.com/google/uuid v1.2.0
 	github.com/spf13/viper v1.11.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.36.4
 	google.golang.org/grpc v1.50.1
 )
 

@@ -3,6 +3,7 @@ package main
 import (
 	"compliance-hub-plugin-trivy/config"
 	"fmt"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"net"
 	"time"
 
@@ -31,7 +32,9 @@ func main() {
 	log.Init(config.Config, trackingInfo)
 
 	netListener := getNetListener(config.Config.GetString("server.address"), config.Config.GetUint("server.port"))
-	gRPCServer := grpc.NewServer(grpc.MaxRecvMsgSize(config.Config.GetInt("grpc.maxrecvsize")))
+	gRPCServer := grpc.NewServer(grpc.MaxRecvMsgSize(config.Config.GetInt("grpc.maxrecvsize")),
+		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
+		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()))
 	chPluginServiceImpl := plugin.CHPluginServiceBuilder(
 		NewTrivyScanner(),
 		config.Config.GetInt("service.workerpool.size"),
