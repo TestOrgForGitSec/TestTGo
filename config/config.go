@@ -20,6 +20,9 @@ func InitConfig() {
 
 	Config.SetDefault("trivy.remote", "http://127.0.0.1:5004")
 
+	Config.SetDefault("service.workerpool.size", 3)
+	Config.SetDefault("heartbeat.timer", 45)
+
 	// dev stuff
 	Config.SetDefault("log.colour", false)
 	Config.SetDefault("log.callerinfo", false)
