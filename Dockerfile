@@ -15,6 +15,7 @@ RUN go test -short ./... \
 FROM aquasec/trivy:0.34.0
 WORKDIR /app
 RUN apk --no-cache add ca-certificates \
+  && apk upgrade --no-cache libcurl \
   && adduser -DHSu 1001 nonpriv
 USER nonpriv
 COPY --from=GOLANG /tmp/myapp /app/myapp
