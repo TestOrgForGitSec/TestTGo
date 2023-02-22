@@ -11,9 +11,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/deliveryblueprints/chlog-go/log"
-	domain "github.com/deliveryblueprints/chplugin-go/v0.4.0/domainv0_4_0"
-	storage "github.com/deliveryblueprints/storage-go"
+	"github.com/cloudbees-compliance/chlog-go/log"
+	domain "github.com/cloudbees-compliance/chplugin-go/v0.4.0/domainv0_4_0"
+	storage "github.com/cloudbees-compliance/storage-go"
 	"github.com/google/uuid"
 )
 

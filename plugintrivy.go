@@ -7,9 +7,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/deliveryblueprints/chlog-go/log"
-	service "github.com/deliveryblueprints/chplugin-go/v0.4.0/servicev0_4_0"
-	"github.com/deliveryblueprints/chplugin-service-go/plugin"
+	"github.com/cloudbees-compliance/chlog-go/log"
+	service "github.com/cloudbees-compliance/chplugin-go/v0.4.0/servicev0_4_0"
+	"github.com/cloudbees-compliance/chplugin-service-go/plugin"
 	"google.golang.org/grpc"
 )
 

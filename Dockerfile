@@ -4,7 +4,7 @@ ARG USER
 ARG TOKEN
 RUN apk --no-cache add make git gcc libtool musl-dev ca-certificates dumb-init \
   && go install golang.org/x/vuln/cmd/govulncheck@latest \
-  && go env -w GOPRIVATE=github.com/deliveryblueprints/* \
+  && go env -w GOPRIVATE=github.com/cloudbees-compliance/* \
   && git config --global url."https://${USER}:${TOKEN}@github.com".insteadOf  "https://github.com" 
 COPY . /src
 RUN go mod download && go mod verify 
