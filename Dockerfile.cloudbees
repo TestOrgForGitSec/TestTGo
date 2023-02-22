@@ -6,7 +6,7 @@ ARG TOKEN
 RUN apk update && apk upgrade
 RUN apk --no-cache add git
 RUN apk add --no-cache pcre2-dev
-#RUN go env -w GOPRIVATE=github.com/deliveryblueprints/*
+#RUN go env -w GOPRIVATE=github.com/cloudbees-compliance/*
 
 ARG GOPROXY
 ARG GO111MODULE
