@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/cloudbees-compliance/chlog-go/log"
 	domain "github.com/cloudbees-compliance/chplugin-go/v0.4.0/domainv0_4_0"
@@ -193,7 +194,7 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 				Standard:      "Trivy Scan",
 				Code:          vulnerabilityId,
 				Name:          fmt.Sprintf("%s - %.75s", vulnerabilityId, aCheck.title),
-				Importance:    aCheck.severity,
+				Importance:    mapSeverity(aCheck.severity, requestId),
 				DetailHeaders: []string{"Package", "Score"},
 				DetailTypes:   []string{"string", "number"},
 				Passes:        []*domain.AssetResult{},
@@ -302,4 +303,19 @@ func (serviceImpl *TrivyScanner) ExecuteAggregator(context.Context, *service.Exe
 
 func (serviceImpl *TrivyScanner) ExecuteAssessor(context.Context, *service.ExecuteRequest, plugin.AssetFetcher, service.CHPluginService_AssessorServer) (*service.ExecuteAssessorResponse, error) {
 	return nil, errors.New("does not support this role")
+}
+
+func mapSeverity(s string, requestID string) string {
+	lower := strings.ToLower(s)
+	switch lower {
+	case "high":
+		return "HIGH"
+	case "very_high", "critical", "error":
+		return "VERY_HIGH"
+	case "medium", "moderate":
+		return "MEDIUM"
+	default:
+		log.Warn(requestID).Msgf("Severity value : %s is defaulting to LOW", lower)
+		return "LOW"
+	}
 }
