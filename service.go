@@ -314,6 +314,8 @@ func mapSeverity(s string, requestID string) string {
 		return "VERY_HIGH"
 	case "medium", "moderate":
 		return "MEDIUM"
+	case "low":
+		return "LOW"
 	default:
 		log.Warn(requestID).Msgf("Severity value : %s is defaulting to LOW", lower)
 		return "LOW"
