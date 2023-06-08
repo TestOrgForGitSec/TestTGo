@@ -30,7 +30,13 @@ RUN GIT_COMMIT=$(git rev-list -1 HEAD) \
 
 #NOTE: custom final image based on trivy upstream image
 FROM aquasec/trivy:${TRIVY_VERSION}
+
+ARG TRIVY_VERSION
 WORKDIR /app
+
+# Label
+LABEL cbc.deps.trivy_version=${TRIVY_VERSION}
+
 RUN apk --no-cache add ca-certificates \
   && apk upgrade --no-cache libcurl \
   && adduser -DHSu 1001 nonpriv
