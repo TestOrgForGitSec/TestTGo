@@ -8,6 +8,7 @@ const (
 	UnderScore       = "_"
 	Colon            = ":"
 	Slash            = "/"
+	CacheDir         = "/tmp/.cache/trivy"
 	WorkDirBase      = "/tmp/scan-"
 	OutputDir        = "/output"
 	OutputFileName   = "scanner_output.json"
@@ -25,6 +26,7 @@ const (
 	SpecifyInputFile    = "--input"
 	SpecifyRemote       = "--remote"
 	SpecifyServer       = "--server"
+	SpecifyCacheDir     = "--cache-dir"
 	//RemoteServer  = "http://trivy-server:8081"
 )
 

@@ -128,9 +128,9 @@ func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfi
 	imageName := strings.ReplaceAll(a.Identifier, Slash, UnderScore)
 	imageName = strings.ReplaceAll(imageName, Colon, UnderScore)
 	outputFile := outDir + Slash + imageName + DoubleUnderScore + OutputFileName
-	var cmdWithParams = fmt.Sprintf("Running Command: %s %s %s %s %s %s %s %s %s %s %s ", App, RunAsImage, RunAsDebug, SpecifyOutputFormat, OutputFormat, SpecifyInputFile, tarballFile.Name(), SpecifyOutput, outputFile, SpecifyServer, config.Config.GetString("trivy.remote"))
+	var cmdWithParams = fmt.Sprintf("Running Command: %s %s %s %s %s %s %s %s %s %s %s %s %s ", App, RunAsImage, RunAsDebug, SpecifyCacheDir, CacheDir, SpecifyOutputFormat, OutputFormat, SpecifyInputFile, tarballFile.Name(), SpecifyOutput, outputFile, SpecifyServer, config.Config.GetString("trivy.remote"))
 	log.Info(requestId).Msg(cmdWithParams)
-	cmd := exec.Command(App, RunAsImage, RunAsDebug, SpecifyOutputFormat, OutputFormat, SpecifyInputFile, tarballFile.Name(), SpecifyOutput, outputFile, SpecifyServer, config.Config.GetString("trivy.remote"))
+	cmd := exec.Command(App, RunAsImage, RunAsDebug, SpecifyCacheDir, CacheDir, SpecifyOutputFormat, OutputFormat, SpecifyInputFile, tarballFile.Name(), SpecifyOutput, outputFile, SpecifyServer, config.Config.GetString("trivy.remote"))
 	scanLog, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Debug(requestId).Msg(string(scanLog))
