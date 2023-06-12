@@ -212,8 +212,9 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 }
 
 func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher, _ service.CHPluginService_AnalyserServer) (*service.ExecuteAnalyserResponse, error) {
-
-	log.Debug().Msgf("Request received: %s", req)
+	log.Debug().Msgf("Request received for Trivy Scanner...")
+	acct := req.Account
+	log.Debug().Msgf("Logging Account: %s", fmt.Sprintf("Uuid: %s ,OrgUuid: %s ,Name: %s ,Identifier: %s ,Type: %s ", acct.Uuid, acct.OrgUuid, acct.Name, acct.Identifier, acct.Type))
 
 	assets, err := assetFetcher.FetchAssets(plugin.AssetFetchRequest{
 		AccountID:          req.Account.Uuid,
