@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/cloudbees-compliance/chlog-go/log"
@@ -35,8 +36,8 @@ func Scan(ctx context.Context, scanType string, a *domain.MasterAsset, ap *domai
 		return err
 	}
 	// remove workdir and subdirs after scan is completed
-	defer os.RemoveAll(workDir)
-
+	//defer os.RemoveAll(workDir)
+	defer cleanUpWorkingDir(workDir, requestId)
 	switch scanType {
 	case "Image":
 		log.Info(requestId).Msgf("Scanning Image %s", a.Identifier)
@@ -236,4 +237,34 @@ func fetchRequestId(ctx context.Context) string {
 	}
 	return requestId
 
+}
+
+func cleanUpWorkingDir(dir string, reqId string) {
+	//inspect files
+	log.Debug(reqId).Msg("Before Removing Working files.....")
+	inspectFiles("/tmp", reqId)
+	// remove workdir and subdirs after scan is completed
+	err := os.RemoveAll(dir)
+	if err != nil {
+		log.Debug(reqId).Msgf("Error occurred while removing the directory %s", dir)
+	}
+	log.Debug(reqId).Msg("After Removing Working files.....")
+	inspectFiles("/tmp", reqId)
+
+}
+
+func inspectFiles(dir, reqId string) {
+	log.Debug(reqId).Msgf("Instrospecting file/dir .... %s", dir)
+	walkThroughAllFiles(dir, reqId)
+}
+
+func walkThroughAllFiles(path string, reqID string) {
+	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			//do nothing
+			log.Debug(reqID).Msg("Error occurred while file walk through")
+		}
+		fmt.Printf("File Name: %s\n", info.Name())
+		return nil
+	})
 }
