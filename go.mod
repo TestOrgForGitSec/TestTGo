@@ -3,10 +3,10 @@ module compliance-hub-plugin-trivy
 go 1.19
 
 require (
-	github.com/cloudbees-compliance/chlog-go v0.4.7
-	github.com/cloudbees-compliance/chplugin-go v1.15.1
-	github.com/cloudbees-compliance/chplugin-service-go v1.14.9
-	github.com/cloudbees-compliance/storage-go v0.1.1
+	github.com/cloudbees-compliance/chlog-go v0.4.9
+	github.com/cloudbees-compliance/chplugin-go v1.19.1
+	github.com/cloudbees-compliance/chplugin-service-go v1.16.0
+	github.com/cloudbees-compliance/storage-go v0.2.0
 	github.com/google/uuid v1.3.0
 	github.com/spf13/viper v1.15.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.36.4
