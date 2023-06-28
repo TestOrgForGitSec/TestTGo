@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"strings"
 
 	"github.com/cloudbees-compliance/chlog-go/log"
@@ -97,12 +98,14 @@ func mapToAssetAttributes(asset domain.Asset, data []byte) *domain.AssetAttribut
 	}
 }
 
-type NVD struct {
-	V3Score float32 `json:"V3Score"`
+type CVSSDetail struct {
+	V3Score  float32 `json:"V3Score"`
+	V3Vector string  `json:"V3Vector"`
 }
 
 type CVSS struct {
-	Nvd NVD `json:"nvd"`
+	Nvd    *CVSSDetail `json:"nvd"`
+	RedHat *CVSSDetail `json:"redhat"`
 }
 
 type TrivyVulnerabilities struct {
@@ -111,7 +114,25 @@ type TrivyVulnerabilities struct {
 	PkgName          string `json:"PkgName"`
 	InstalledVersion string `json:"InstalledVersion"`
 	Severity         string `json:"Severity"`
-	CVSS             CVSS   `json:"CVSS"`
+	CVSS             *CVSS  `json:"CVSS"`
+	Description      string `json:"Description"`
+	PkgId            string `json:"PkgID"`
+	FixedVersion     string `json:"FixedVersion"`
+	SeveritySource   string `json:"SeveritySource"`
+	PrimaryURL       string `json:"PrimaryURL"`
+	Layer            struct {
+		Digest string `json:"Digest"`
+		DiffId string `json:"DiffID"`
+	} `json:"Layer"`
+	Datasource struct {
+		Id   string `json:"ID"`
+		Name string `json:"Name"`
+		URL  string `json:"URL"`
+	} `json:"DataSource"`
+	CweIDs           []string `json:"CweIDs"`
+	ReferencesUrl    []string `json:"References"`
+	PublishedDate    string   `json:"PublishedDate"`
+	LastModifiedDate string   `json:"LastModifiedDate"`
 }
 
 type TrivyResult struct {
@@ -136,10 +157,14 @@ type TrivyRun struct {
 }
 
 type vulnerabilityAssetCheck struct {
-	id          string
-	title       string
-	severity    string
-	assetResult *domain.AssetResult
+	id           string
+	title        string
+	severity     string
+	description  string
+	fixedVersion string
+	assetResult  *domain.AssetResult
+	baseData     []byte
+	cvssv3       string
 }
 
 func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset domain.Asset, profile *domain.AssetProfile, checks map[string]*domain.Evaluation) map[string]*domain.Evaluation {
@@ -152,6 +177,10 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 	var ok bool
 	for _, vulnerability := range results {
 		if assetCheck, ok = assetChecks[vulnerability.VulnerabilityID]; !ok {
+			data, err := makeBaseData(vulnerability)
+			if err != nil {
+				log.Debug(requestId).Msgf("Error occurred while making base data for Vulnerability %s", vulnerability.VulnerabilityID)
+			}
 			assetChecks[vulnerability.VulnerabilityID] = vulnerabilityAssetCheck{
 				id:       vulnerability.VulnerabilityID,
 				title:    vulnerability.Title,
@@ -166,6 +195,10 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 					ProfileUuid:    profile.Uuid,
 					Details:        []*domain.DetailRow{},
 				},
+				baseData:     data,
+				description:  vulnerability.Description,
+				fixedVersion: vulnerability.FixedVersion,
+				cvssv3:       getV3Vector(vulnerability.CVSS, vulnerability.SeveritySource),
 			}
 
 			assetCheck = assetChecks[vulnerability.VulnerabilityID]
@@ -173,32 +206,54 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 
 		log.Info(requestId).Msgf("Adding fail detail for %s:%s.%s)", vulnerability.VulnerabilityID, asset.MasterAsset.SubType, asset.MasterAsset.Identifier)
 
-		var score float32
-		if vulnerability.CVSS.Nvd.V3Score != 0 {
-			score = vulnerability.CVSS.Nvd.V3Score
-		} else {
-			score = 5.6
-		}
-
-		assetCheck.assetResult.Details = append(assetCheck.assetResult.Details, &domain.DetailRow{
-			Data: []string{vulnerability.PkgName, fmt.Sprintf("%.1f", score)},
-		})
+		assetCheck.assetResult.Details = append(assetCheck.assetResult.Details, &domain.DetailRow{Data: buildDetailRow(vulnerability, requestId)})
 	}
 
 	var check *domain.Evaluation
+	//Evaluation constants
+	VulnCategory := "VULNERABILITY"
+
 	for vulnerabilityId, aCheck := range assetChecks {
 
 		if check, ok = checks[vulnerabilityId]; !ok {
 			log.Info(requestId).Msgf("Adding new check %s", vulnerabilityId)
 			checks[vulnerabilityId] = &domain.Evaluation{
-				Standard:      "Trivy Scan",
-				Code:          vulnerabilityId,
-				Name:          fmt.Sprintf("%s - %.75s", vulnerabilityId, aCheck.title),
-				Importance:    mapSeverity(aCheck.severity, requestId),
-				DetailHeaders: []string{"Package", "Score"},
-				DetailTypes:   []string{"string", "number"},
-				Passes:        []*domain.AssetResult{},
-				Failures:      []*domain.AssetResult{},
+				Standard:    "STANDARD",
+				Code:        vulnerabilityId,
+				Name:        fmt.Sprintf("%s - %.75s", vulnerabilityId, aCheck.title),
+				Importance:  mapSeverity(aCheck.severity, requestId),
+				Description: aCheck.description,
+				Cvssv3:      aCheck.cvssv3,
+				Remediation: &aCheck.fixedVersion,
+				DetailHeaders: []string{
+					"Package Name",
+					"Fixed Version",
+					"Score",
+					"Layer",
+					"Severity Source",
+					"Primary URL",
+					"DataSource",
+					"CWEIDs",
+					"Reference URLs",
+					"Published Date",
+					"Last Modified Date"},
+				DetailTypes: []string{
+					"string",
+					"string",
+					"json",
+					"json",
+					"string",
+					"link",
+					"json",
+					"string",
+					"csv[link]",
+					"string",
+					"string"},
+				DetailContexts: []string{"SUMMARY", "SUMMARY", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL"},
+				Category:       &VulnCategory,
+				Passes:         []*domain.AssetResult{},
+				Failures:       []*domain.AssetResult{},
+				BaseData:       aCheck.baseData,
 			}
 
 			check = checks[vulnerabilityId]
@@ -210,7 +265,22 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 
 	return checks
 }
+func buildDetailRow(v TrivyVulnerabilities, reqId string) []string {
 
+	return []string{
+		v.PkgId,                                 // Package Id
+		v.FixedVersion,                          // Fixed Version
+		makeJsonString(v.CVSS, reqId, "CVSS"),   // Score - json
+		makeJsonString(v.Layer, reqId, "Layer"), // Layer
+		v.SeveritySource,                        // Severity Source
+		v.PrimaryURL,                            // Primary URL
+		makeJsonString(v.Datasource, reqId, "DataSource"), //Datasource -json
+		strings.Join(v.CweIDs, ","),                       // CWEIds
+		strings.Join(v.ReferencesUrl, ","),                //Reference link - csv[link]
+		v.PublishedDate,                                   // Published Date
+		v.LastModifiedDate,                                // LastModifiedDate
+	}
+}
 func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *service.ExecuteRequest, assetFetcher plugin.AssetFetcher, _ service.CHPluginService_AnalyserServer) (*service.ExecuteAnalyserResponse, error) {
 	log.Debug().Msgf("Request received for Trivy Scanner...")
 	acct := req.Account
@@ -267,6 +337,7 @@ func (serviceImpl *TrivyScanner) ExecuteAnalyser(ctx context.Context, req *servi
 
 							checks = mapToEvaluation(ctx, run.ScanOutput[0].ImageScanOutput.Results[0].Vulnerabilities, *asset, profile, checks)
 							log.Warn(requestId).Msgf("total so far : %d trivy checks", len(checks))
+
 						}
 					}
 				}
@@ -321,4 +392,43 @@ func mapSeverity(s string, requestID string) string {
 		log.Warn(requestID).Msgf("Severity value : %s is defaulting to LOW", lower)
 		return "LOW"
 	}
+}
+
+// Base Data
+func makeBaseData(v TrivyVulnerabilities) ([]byte, error) {
+	return json.Marshal(v)
+}
+
+// V3 Vector based on Severity Source
+func getV3Vector(cvss *CVSS, sevSrc string) string {
+
+	var cvsv3 string
+
+	switch src := sevSrc; src {
+	case "nvd":
+		if cvss != nil && cvss.Nvd != nil {
+			cvsv3 = cvss.Nvd.V3Vector
+		}
+
+	case "redhat":
+		if cvss != nil && cvss.RedHat != nil {
+			cvsv3 = cvss.RedHat.V3Vector
+		}
+
+	default:
+		if cvss != nil && cvss.Nvd != nil {
+			cvsv3 = cvss.Nvd.V3Vector
+		}
+	}
+
+	return cvsv3
+}
+
+func makeJsonString(v any, reqId string, field string) string {
+	b, err := json.Marshal(v)
+	if err != nil || b == nil {
+		log.Debug(reqId).Msgf("Error occurred while marshalling the field %s", field)
+		return ""
+	}
+	return string(b)
 }
