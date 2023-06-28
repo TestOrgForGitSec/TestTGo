@@ -16,6 +16,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	Summary = "SUMMARY"
+	Detail  = "DETAIL"
+)
+
 type SubAttributesDTO struct {
 	AssetAttributesUUID string          `json:"assetAttributeUuid"`
 	Type                string          `json:"type"`
@@ -249,7 +254,7 @@ func mapToEvaluation(ctx context.Context, results []TrivyVulnerabilities, asset 
 					"csv[link]",
 					"string",
 					"string"},
-				DetailContexts: []string{"SUMMARY", "SUMMARY", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL", "DETAIL"},
+				DetailContexts: []string{Summary, Summary, Detail, Detail, Detail, Detail, Detail, Detail, Detail, Detail, Detail},
 				Category:       &VulnCategory,
 				Passes:         []*domain.AssetResult{},
 				Failures:       []*domain.AssetResult{},
