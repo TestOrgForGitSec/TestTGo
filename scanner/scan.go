@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -76,23 +77,71 @@ func writeTarballTemp(data []byte) (*os.File, error) {
 }
 
 func fetchBinaryData(binAttrib *domain.BinaryAttribute, ctx context.Context) ([]byte, error) {
-	// fetch the image tar in external storage
-	if binAttrib.SourceType == domain.SourceType_REMOTE {
-		storageSpec := storage.StorageSpec(binAttrib.SourceMetadata)
-		st, err := storage.NewStorage(ctx, storageSpec)
-		if err != nil {
-			return nil, err
-		}
+	if isSAASEnabled(binAttrib) {
+		cbTarPath := getEnvValue("CB_TAR_PATH")
+		binaryData, err := readFile(cbTarPath + binAttrib.Name)
 
-		binaryData, _, err := st.Fetch(ctx)
 		if err != nil {
+			log.Error().Msgf("error retrieving binary data from %s", cbTarPath)
 			return nil, err
 		}
 
 		return binaryData, nil
 	} else {
-		return binAttrib.Data, nil
+		// fetch the image tar in external storage
+		if binAttrib.SourceType == domain.SourceType_REMOTE {
+			storageSpec := storage.StorageSpec(binAttrib.SourceMetadata)
+			st, err := storage.NewStorage(ctx, storageSpec)
+			if err != nil {
+				return nil, err
+			}
+
+			binaryData, _, err := st.Fetch(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			return binaryData, nil
+		} else {
+			return binAttrib.Data, nil
+		}
 	}
+}
+
+func isSAASEnabled(binAttrib *domain.BinaryAttribute) bool {
+	if binAttrib.GetName() != "" && getEnvValue("INVOCATION_TYPE") != "" && getEnvValue("CB_TAR_PATH") != "" && strings.EqualFold(getEnvValue("INVOCATION_TYPE"), "SAAS") {
+		return true
+	}
+	return false
+}
+
+// GetEnvValue returns the value of the environment variable
+func getEnvValue(key string) string {
+	envValue, ok := os.LookupEnv(key)
+	if !ok {
+		return ""
+	}
+	return envValue
+}
+
+// readFile reads the input file
+func readFile(inputFile string) ([]byte, error) {
+
+	file, err := os.Open(inputFile)
+	if err != nil {
+		log.Error().Msgf("Error opening a file: %s", inputFile)
+		return nil, err
+	}
+
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		log.Error().Msgf("Error reading a file %s", inputFile)
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func scanImage(ctx context.Context, a *domain.MasterAsset, ap *domain.AssetProfile, outDir string) error {
