@@ -1,7 +1,7 @@
 ARG BASE_BUILD_IMAGE=golang:1.19-alpine
 # final image ARG is not used as this has a custom trivy based image at present
 ARG BASE_FINAL_IMAGE
-ARG TRIVY_VERSION=0.44.0
+ARG TRIVY_VERSION=0.45.1
 
 FROM ${BASE_BUILD_IMAGE} AS GOLANG
 WORKDIR /src

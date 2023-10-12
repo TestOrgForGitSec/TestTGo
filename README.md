@@ -1,4 +1,4 @@
-# compliance-hub-plugin-trivy
+## compliance-hub-plugin-trivy
 Trivy plugin for container and OS scanning.
 
 ## Environment variables used for reading env vars (secrets) directly from secrets manager.
